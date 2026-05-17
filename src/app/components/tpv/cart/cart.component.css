@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  min-height: 0;
+  height: 100%;
+}
+
+.cart-container {
+  background-color: var(--sidebar-bg);
+  border: var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.cart-container h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-color);
+  border-bottom: 3px solid var(--secondary-color);
+  padding-bottom: 12px;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.items-list {
+  margin-bottom: 16px;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--light-bg);
+  font-size: 13px;
+}
+
+.item-info {
+  min-width: 0;
+}
+
+.item-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-info p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.item-quantity {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+}
+
+.item-quantity button {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: var(--light-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  min-width: 28px;
+}
+
+.item-quantity button:hover {
+  background-color: var(--border-color);
+}
+
+.item-quantity input {
+  width: 40px;
+  padding: 4px 6px;
+  text-align: center;
+  border: var(--border-primary);
+  border-radius: 3px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.item-total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100px;
+}
+
+.item-total p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--success-color);
+  min-width: 60px;
+  text-align: right;
+}
+
+.btn-remove {
+  padding: 4px 8px;
+  background-color: var(--danger-color);
+  color: var(--white);
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 28px;
+}
+
+.btn-remove:hover {
+  background-color: var(--danger-dark);
+}
+
+.btn-clear {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--danger-color);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-clear:hover {
+  background-color: var(--danger-dark);
+}

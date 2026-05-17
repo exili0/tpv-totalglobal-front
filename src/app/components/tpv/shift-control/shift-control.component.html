@@ -1,0 +1,23 @@
+<section class="shift-panel">
+  <h3>Turno de caja</h3>
+
+  <div class="field-group">
+    <label for="openingFloat">Fondo inicial</label>
+    <input
+      id="openingFloat"
+      type="number"
+      min="0"
+      step="0.01"
+      [(ngModel)]="openingFloat"
+      [disabled]="isLoading"
+    >
+  </div>
+
+  <div class="actions-row">
+    <button type="button" class="btn-open" (click)="openShift()" [disabled]="isLoading">Abrir turno</button>
+    <button type="button" class="btn-close" (click)="closeShift()" [disabled]="isLoading">Cerrar turno</button>
+  </div>
+
+  <p *ngIf="successMessage" class="msg-ok">{{ successMessage }}</p>
+  <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+</section>

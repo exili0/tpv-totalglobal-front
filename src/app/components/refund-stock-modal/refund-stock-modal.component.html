@@ -1,0 +1,62 @@
+<div class="refund-stock-modal">
+  <h2 class="modal-title">Procesamiento de Devolución</h2>
+
+  <div class="modal-content">
+    <div class="product-info">
+      <h3>Producto: {{ product?.name }}</h3>
+      <p class="quantity-info">Cantidad a devolver: <strong>{{ quantity }}</strong></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="decision-section">
+      <p class="question">¿Qué deseas hacer con este producto?</p>
+
+      <div class="option-group">
+        <button type="button" class="option option-stock" [class.selected]="returnToStock" (click)="returnToStock = true">
+          <div class="text">
+            <strong>Retornar al Stock</strong>
+            <p class="description">El producto vuelve disponible para futuras ventas</p>
+          </div>
+        </button>
+
+        <button type="button" class="option option-waste" [class.selected]="!returnToStock" (click)="returnToStock = false">
+          <div class="text">
+            <strong>Considerar como Desecho</strong>
+            <p class="description">Registra pérdida de stock para análisis y estadísticas</p>
+          </div>
+        </button>
+      </div>
+
+      <label class="reason-label" for="refundReason">Motivo de la devolución (opcional)</label>
+      <textarea
+        id="refundReason"
+        class="reason-field"
+        [(ngModel)]="reason"
+        rows="3"
+        placeholder="Ej: Producto defectuoso, Cambio de menú, etc."></textarea>
+    </div>
+
+    <div class="info-box" *ngIf="!returnToStock">
+      <p><strong>Importante:</strong> Al marcar como desecho, se registrará como pérdida de stock. Esto aparecerá en el reporte de pérdidas para análisis de eficiencia.</p>
+    </div>
+  </div>
+
+  <div class="modal-actions">
+    <button mat-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+
+    <button mat-raised-button color="accent" 
+            (click)="onConfirmReturnToStock()" 
+            [disabled]="!returnToStock"
+            class="btn-stock">
+      Retornar al Stock
+    </button>
+
+    <button mat-raised-button color="warn" 
+            (click)="onConfirmAsWaste()" 
+            [disabled]="returnToStock"
+            class="btn-waste">
+      Marcar como Desecho
+    </button>
+  </div>
+</div>

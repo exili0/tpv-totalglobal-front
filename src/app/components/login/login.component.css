@@ -1,0 +1,134 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Usamos el gradiente dinámico definido en el root */
+    background: var(--background); 
+    box-sizing: border-box;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.login-data {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Reducido un poco para que no quede tan estirado */
+    width: 100%;
+    max-width: 400px;
+    background-color: var(--panel-bg);
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+}
+
+.login-logo {
+    height: 60px;
+    width: auto;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.password-input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* El input ya hereda el estilo redondeado del styles.css global */
+.password-input-group input {
+    flex: 1;
+    padding-right: 45px;
+    width: 100%; /* Asegura que ocupe todo el ancho */
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Centrado vertical */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.toggle-password-btn svg {
+    width: 22px;
+    height: 22px;
+    transition: fill 0.2s ease;
+}
+
+.toggle-password-btn:hover:not(:disabled) {
+    opacity: 1;
+}
+
+/* MENSAJE DE ERROR */
+.error-message {
+    color: var(--text-white);
+    background-color: var(--error-color);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: left;
+    margin: 4px 0;
+    font-weight: 500;
+}
+
+/* BOTÓN RESTAURAR */
+.restore-password-button { 
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: auto;
+    margin: 0 auto;
+    cursor: pointer;
+    color: var(--secondary-color);
+    text-decoration: underline;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.restore-password-button:hover {
+    background-color: transparent;
+    color: var(--primary-color);
+    transform: none; /* Evitamos el scale del botón global */
+}
+
+/* Ajuste específico para el botón de acceso para que no herede márgenes extraños */
+.submit-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Media queries */
+@media (max-width: 480px) {
+    .login-data {
+        max-width: 85%;
+        padding: 32px 20px;
+        gap: 25px;
+    }
+
+    .login-logo {
+        height: 50px;
+    }
+}

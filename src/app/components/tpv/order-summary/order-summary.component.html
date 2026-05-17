@@ -1,0 +1,55 @@
+<div class="order-summary-container">
+  <div *ngIf="(cartSummary$ | async) as summary" class="summary-content">
+    <button type="button" class="summary-toggle" (click)="toggleSummary()" [attr.aria-expanded]="isExpanded">
+      <span>Resumen</span>
+      <strong>{{ $any(summary).itemCount }}</strong>
+    </button>
+
+    <div *ngIf="isExpanded" class="summary-body">
+      <p class="current-service" *ngIf="selectedTable !== null">
+        Servicio actual: <strong>{{ selectedTable === 0 ? 'Barra (Mesa 0)' : ('Mesa ' + selectedTable) }}</strong>
+      </p>
+
+      <div class="service-mode">
+        <label for="paymentMethod">Método de cobro</label>
+        <select id="paymentMethod" [value]="selectedPaymentMethod" (change)="selectedPaymentMethod = $any($event.target).value">
+          <option value="CASH">Efectivo</option>
+          <option value="CARD">Tarjeta</option>
+          <option value="OTHER">Otro</option>
+        </select>
+      </div>
+
+      <div class="service-mode">
+        <label for="notes">Notas del ticket</label>
+        <textarea id="notes" rows="2" [value]="notes" (input)="notes = $any($event.target).value" placeholder="Opcional"></textarea>
+      </div>
+
+      <div class="summary-row">
+        <span>Items:</span>
+        <strong>{{ $any(summary).itemCount }}</strong>
+      </div>
+
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <strong>{{ $any(summary).subtotal | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
+      </div>
+
+      <div class="summary-row">
+        <span>IVA (21%):</span>
+        <strong>{{ $any(summary).totalVat | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
+      </div>
+
+      <div class="summary-row total">
+        <span>TOTAL:</span>
+        <strong>{{ $any(summary).total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
+      </div>
+
+      <button (click)="processPayment()" [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null" class="btn-pay">
+        {{ isProcessing ? 'Procesando...' : 'Cobrar' }}
+      </button>
+
+      <p *ngIf="feedbackMessage" class="msg-ok">{{ feedbackMessage }}</p>
+      <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="form-container">
+  <h3>{{isEditMode ? 'Editar Producto' : 'Nuevo Producto'}}</h3>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <div class="form-group">
+      <label for="name">Nombre *</label>
+      <input id="name" type="text" formControlName="name" placeholder="Ej: Coca-Cola">
+      <small *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="error">
+        Nombre requerido (mínimo 3 caracteres)
+      </small>
+    </div>
+      <!--------------------------------------------->
+    <div class="form-group">
+      <label for="description">Descripción *</label>
+      <textarea id="description" formControlName="description" placeholder="Descripción del producto"></textarea>
+      <small *ngIf="form.get('description')?.invalid && form.get('description')?.touched" class="error">
+        Descripción requerida
+      </small>
+    </div>
+      <!--------------------------------------------->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="price">Precio *</label>
+        <input id="price" type="number" formControlName="price" placeholder="0.00" step="0.01" min="0">
+        <small *ngIf="form.get('price')?.invalid && form.get('price')?.touched" class="error">
+          Precio requerido y mayor a 0
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="vatPercent">IVA % *</label>
+        <input id="vatPercent" type="number" formControlName="vatPercent" placeholder="21" min="0" max="100">
+        <small *ngIf="form.get('vatPercent')?.invalid && form.get('vatPercent')?.touched" class="error">
+          IVA entre 0-100
+        </small>
+      </div>
+    </div>
+      <!--------------------------------------------->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="categoryId">Categoría *</label>
+        <select id="categoryId" formControlName="categoryId">
+          <option value="" disabled>Selecciona una categoría</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</option>
+        </select>
+        <small *ngIf="form.get('categoryId')?.invalid && form.get('categoryId')?.touched" class="error">
+          Categoría requerida
+        </small>
+      </div>
+      <!--------------------------------------------->
+      <div class="form-group">
+        <label for="stock">Stock</label>
+        <input id="stock" type="number" formControlName="stock" placeholder="0" min="0">
+      </div>
+    </div>
+
+    <!--------------------------------------------->
+    <div class="form-group">
+      <label for="barcode">Código de Barras</label>
+      <input id="barcode" type="text" formControlName="barcode" placeholder="Opcional">
+    </div>
+
+    <div class="form-group">
+      <label for="imageUrl">URL de Imagen</label>
+      <input id="imageUrl" type="text" formControlName="imageUrl" placeholder="https://...">
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      {{error}}
+    </div>
+      <!--------------------------------------------->
+    <div class="form-actions">
+      <button type="submit" [disabled]="form.invalid || isLoading" class="btn-submit">
+        {{isLoading ? 'Guardando...' : 'Guardar'}}
+      </button>
+      <button type="button" (click)="cancel()" class="btn-cancel">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

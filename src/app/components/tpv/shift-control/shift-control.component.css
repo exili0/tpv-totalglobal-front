@@ -1,0 +1,70 @@
+.shift-panel {
+  background-color: var(--sidebar-bg);
+  border: var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+
+.shift-panel h3 {
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+  font-size: 15px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.field-group label {
+  color: var(--text-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-group input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background-color: var(--white);
+  color: var(--text-dark);
+}
+
+.actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.btn-open,
+.btn-close {
+  min-height: 36px;
+  border-radius: 8px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.btn-open {
+  background-color: var(--success-color);
+}
+
+.btn-close {
+  background-color: var(--warning-color);
+}
+
+.msg-ok,
+.msg-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.msg-ok {
+  color: var(--success-color);
+}
+
+.msg-error {
+  color: var(--danger-color);
+}

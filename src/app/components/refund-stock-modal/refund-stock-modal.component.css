@@ -1,0 +1,179 @@
+.refund-stock-modal {
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.modal-title {
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.modal-content {
+  padding: 20px 0;
+}
+
+.product-info {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.product-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.quantity-info {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.divider {
+  margin: 20px 0;
+}
+
+.decision-section {
+  margin: 20px 0;
+}
+
+.question {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.option {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.option:hover {
+  border-color: #1976d2;
+  background-color: #f9f9f9;
+}
+
+.option.selected {
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+}
+
+.option-stock.selected {
+  border-color: #4caf50;
+  background-color: #f1f8f4;
+}
+
+.option-waste.selected {
+  border-color: #f44336;
+  background-color: #fff3f1;
+}
+
+.option-label,
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.icon {
+  font-size: 24px;
+  min-width: 30px;
+}
+
+.text {
+  flex: 1;
+}
+
+.text strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.description {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.reason-field {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.reason-label {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.info-box {
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-left: 4px solid #1976d2;
+  border-radius: 4px;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #0d47a1;
+}
+
+.info-box p {
+  margin: 0;
+}
+
+.modal-actions {
+  padding: 16px 0 0 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-cancel {
+  color: #666;
+}
+
+.btn-stock:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-waste:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-stock:not(:disabled) {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-waste:not(:disabled) {
+  background-color: #f44336;
+  color: white;
+}

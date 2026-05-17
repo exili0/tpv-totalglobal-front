@@ -1,0 +1,148 @@
+.order-summary-container {
+  background-color: var(--sidebar-bg);
+  border: var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 10px 14px 14px;
+}
+
+.summary-toggle {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+.summary-toggle span {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.summary-toggle strong {
+  color: var(--secondary-color);
+}
+
+.summary-body {
+  margin-top: 10px;
+}
+
+.service-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.service-mode label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.service-mode select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.service-mode textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-size: 14px;
+  resize: vertical;
+}
+
+.current-service {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-dark);
+}
+
+.current-service strong {
+  color: var(--primary-color);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--light-bg);
+}
+
+.summary-row span:first-child {
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.summary-row strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.summary-row.total {
+  border-bottom: none;
+  border-top: 2px solid var(--border-color);
+  padding: 10px 0;
+  font-size: 15px;
+}
+
+.summary-row.total strong {
+  font-size: 16px;
+  color: var(--success-color);
+}
+
+.btn-pay {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: var(--success-color);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pay:hover:not(:disabled) {
+  background-color: var(--success-dark);
+  transform: scale(1.02);
+}
+
+.btn-pay:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.msg-ok,
+.msg-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.msg-ok {
+  color: var(--success-color);
+}
+
+.msg-error {
+  color: var(--danger-color);
+}

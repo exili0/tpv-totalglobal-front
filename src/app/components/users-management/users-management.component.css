@@ -1,0 +1,445 @@
+.users-managament-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+}
+
+
+.managament-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+   
+    overflow-y: auto;
+}
+
+label {
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+    padding: 10px 0;
+    color: var(--text-color);
+    font-size: 14px;
+
+}
+
+h2 {
+    padding: 12px 400px;
+    background-color: var(--primary-color);
+    border-radius: 30px;
+    color: var(--text-white);
+}
+
+.users-table {
+    width: 100%;
+
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    box-shadow: var(--shadow-soft);
+    background-color: var(--surface-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table thead {
+    background-color: var(--primary-color);
+    color: var(--text-white);
+}
+
+.users-table th,
+.users-table td {
+    padding: 15px 20px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+
+.users-table tbody tr:nth-child(even) {
+    background-color: var(--secondary-soft);
+}
+
+/*------------------------*/
+.table-header {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    margin-left: 50px;
+    gap: 90%;
+    margin-top: 10px;
+
+}
+
+.table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/************* MODAL*/
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: color-mix(in srgb, var(--text-color) 25%, transparent);
+    z-index: 1000;
+    
+}
+
+.add-user-modal {
+    width: 100%;
+    max-width: 820px;
+    padding: 24px;
+    border-radius: 12px;
+    background-color: var(--surface-bg);
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.add-user-modal h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.btn-modal-close {
+    background: transparent;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    /**/
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0;
+}
+
+.btn-modal-close:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.form-row {
+    display: grid;
+    align-items: center;
+}
+
+.form-row-top {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.form-row-bottom {
+    grid-template-columns: 3.5fr 0.6fr 0.6fr;
+    gap: 20px;
+}
+
+.add-user-modal input {
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 25%, transparent);
+    border-radius: 8px;
+    background-color: var(--surface-bg);
+    color: var(--text-color);
+}
+
+.role-select{
+    height: 42px;
+    padding: 0 12px;
+
+    border: 1px solid color-mix(in srgb, var(--text-color) 25%, transparent);
+    border-radius: 8px;
+    background-color: var(--surface-bg);
+    color: var(--text-color);
+}
+
+.role-label {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.btn-save {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.btn-save svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--secondary-color);
+}
+
+/************* MODAL*/
+.btn-add {
+    /*Dimensiones fijas*/
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+
+
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    cursor: pointer;
+
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+
+    font-size: 32px;
+    /* Un poco más grande para el "+" */
+    line-height: 0;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+
+    padding-bottom: 8px;
+}
+
+/* Ajuste específico para el icono de volver */
+
+.btn-back {
+    /*Dimensiones fijas*/
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: var(--secondary-color);
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-back svg {
+    fill: var(--text-white);
+}
+
+.btn-add:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-add:active {
+    transform: scale(0.95);
+}
+
+/***************/
+
+.actions-cell {
+
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    /*Centrado*/
+
+}
+
+.btn-action {
+    background-color: transparent;
+    border: 0;
+
+    padding: 6px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+
+
+}
+
+.btn-action:hover {
+    border-color: var(--primary-color);
+    background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.btn-action svg {
+    fill: var(--secondary-color);
+}
+
+.active-cell {
+    text-align: center;
+}
+
+/* Botón de estado de alta (primer login) */
+.btn-indicateFirstLogin svg {
+    fill: var(--secondary-color, var(--secondarycolor));
+}
+
+/* Alta pendiente: icono verde, no se puede pulsar */
+.btn-indicateFirstLogin.first-login-active {
+    cursor: not-allowed;
+    opacity: 1;
+}
+.btn-indicateFirstLogin.first-login-active svg {
+    fill: var(--primary-color);
+}
+.btn-indicateFirstLogin.first-login-active:hover {
+    background-color: transparent;
+}
+
+/* Alta completada: icono normal, se puede pulsar para reactivar */
+.btn-indicateFirstLogin:not(.first-login-active):not(:disabled) {
+    cursor: pointer;
+}
+.btn-indicateFirstLogin:not(.first-login-active):hover {
+    border-color: var(--primary-color);
+    background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+
+/* Media query para pantallas pequeñas */
+@media (max-width: 768px) {
+    .managament-content {
+        padding: 8px 6px;
+    }
+
+    .add-user-modal {
+        width: calc(100% - 24px);
+        padding: 16px;
+    }
+
+    .form-row-top,
+    .form-row-bottom {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .btn-save {
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .users-table {
+        min-width: 840px;
+        font-size: 12px;
+        margin: 10px 0;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 10px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .actions-cell {
+        white-space: nowrap;
+    }
+
+    .btn-action {
+        padding: 4px 6px;
+    }
+
+    h2 {
+        font-size: 18px;
+        padding: 12px 80px;
+
+    }
+
+    button {
+        padding: 10px 24px;
+        font-size: 13px;
+    }
+}
+
+/* Custom Checkbox */
+.custom-checkbox {
+
+    margin-top: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--secondary-color);
+    border-radius: 35px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.custom-checkbox.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.custom-checkbox svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Texto informativo en modales */
+.info-text {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: var(--secondary-soft);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+/* Ajuste para el botón de regreso nativo que sustituyó al componente obsoleto */
+.back-btn-container {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    color: var(--text-color, #1b1a1a);
+}
+
+.btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-back:hover {
+    background-color: var(--primary-soft);
+    transform: scale(1.1);
+}

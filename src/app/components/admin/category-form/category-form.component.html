@@ -1,0 +1,50 @@
+<div class="form-container">
+  <h3>{{isEditMode ? 'Editar Categoría' : 'Nueva Categoría'}}</h3>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <div class="form-group">
+      <label for="name">Nombre *</label>
+      <input id="name" type="text" formControlName="name" placeholder="Ej: Bebidas">
+      <small *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="error">
+        Nombre requerido (mínimo 3 caracteres)
+      </small>
+    </div>
+      <!--------------------------------------------->
+    <div class="form-group">
+      <label for="description">Descripción *</label>
+      <textarea id="description" formControlName="description" placeholder="Descripción de la categoría"></textarea>
+      <small *ngIf="form.get('description')?.invalid && form.get('description')?.touched" class="error">
+        Descripción requerida
+      </small>
+    </div>
+      <!--------------------------------------------->
+    <div class="form-group">
+      <label for="color">Color *</label>
+      <div class="color-preview-row">
+        <div class="color-preview-box" [style.backgroundColor]="getAccessiblePreviewColor()"></div>
+        <small class="color-preview-text" *ngIf="isColorAdaptedMode()">
+          Vista adaptada para el modo daltónico activo
+        </small>
+      </div>
+      <input id="color" type="color" formControlName="color">
+    </div>
+      <!--------------------------------------------->
+    <div class="form-group">
+      <label for="parentCategoryId">Categoría Padre</label>
+      <input id="parentCategoryId" type="number" formControlName="parentCategoryId" placeholder="ID de categoría padre (opcional)">
+    </div>
+      <!--------------------------------------------->
+    <div *ngIf="error" class="error-message">
+      {{error}}   <!--Este mensaje se muestra si hay un error al guardar la categoría-->
+    </div>
+      <!--------------------------------------------->
+    <div class="form-actions">
+      <button type="submit" [disabled]="form.invalid || isLoading" class="btn-submit">
+        {{isLoading ? 'Guardando...' : 'Guardar'}}
+      </button>
+      <button type="button" (click)="cancel()" class="btn-cancel">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

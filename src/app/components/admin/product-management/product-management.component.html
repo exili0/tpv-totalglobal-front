@@ -1,0 +1,78 @@
+<div class="page-wrapper">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
+
+  <div class="page-content">
+    <div class="page-header">
+      <button (click)="goBack()" class="icon-button back-btn-container" title="Volver" aria-label="Volver al menú administrador">
+        <div class="btn-back">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+            <rect fill="none" height="24" width="24" />
+            <g><polygon points="17.77,3.77 16,2 6,12 16,22 17.77,20.23 9.54,12" /></g>
+          </svg>
+        </div>
+      </button>
+      <h1>Gestión de Productos</h1>
+    </div>
+      <!--------------------------------------------->
+    <div class="admin-container">
+      <div class="header">
+        <h1 style="margin: 0; flex: 1;">Productos</h1>
+        <button (click)="openNewForm()" class="btn-new">+ Nuevo Producto</button>
+      </div>
+
+      <div *ngIf="showForm" class="form-modal">
+        <div class="form-content">
+          <app-product-form 
+            [product]="selectedProduct"
+            (formClosed)="closeForm()"
+            (formSubmitted)="loadProducts(); closeForm()">
+          </app-product-form>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="loading">
+        <p>Cargando productos...</p>
+      </div>
+
+      <div *ngIf="error" class="error">
+        <p>{{error}}</p>
+      </div>
+        <!--------------------------------------------->
+        <!-- Carga solo si hay productos -->
+      <div *ngIf="!isLoading && products.length > 0" class="products-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>IVA</th>
+              <th>Stock</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products">
+              <td>{{product.name}}</td>
+              <td>{{product.price | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</td>
+              <td>{{product.vatPercent}}%</td>
+              <td>{{product.stock ?? '-'}}</td>
+              <td>
+                <span [class.active]="product.active" [class.inactive]="!product.active">
+                  {{product.active ? 'Activo' : 'Inactivo'}}
+                </span>
+              </td>
+              <td class="actions">
+                <button (click)="editProduct(product)" class="btn-edit">Editar</button>
+                <button (click)="toggleActive(product)" [class.btn-activate]="!product.active" [class.btn-deactivate]="product.active">
+                  {{product.active ? 'Desactivar' : 'Activar'}}
+                </button>
+                <button (click)="deleteProduct(product.id)" class="btn-delete">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

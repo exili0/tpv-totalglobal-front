@@ -1,0 +1,41 @@
+<div class="page-wrapper">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
+
+  <main class="tables-page">
+    <header class="tables-header">
+      <h1>Selecciona una mesa</h1>
+      <button type="button" class="btn-refresh" (click)="loadTables()" [disabled]="isLoading">Actualizar</button>
+    </header>
+
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+    <section *ngIf="!isLoading" class="tables-grid">
+      <button
+        type="button"
+        class="table-card"
+        [class.table-card-occupied]="isTableOccupied(table)"
+        [class.table-card-inactive]="table.status === 'INACTIVE'"
+        [class.table-card-locked]="isTableLockedByOther(table)"
+        [disabled]="isTableLockedByOther(table)"
+        *ngFor="let table of tables"
+        (click)="openTable(table)"
+      >
+        <span class="table-number">{{ table.tableNumber }}</span>
+        <span class="table-name">{{ getTableDisplayName(table) }}</span>
+        <span class="table-indicator" *ngIf="isTableOccupied(table)" aria-label="Mesa ocupada">
+          [Pendiente de cobro]
+        </span>
+        <span
+          class="table-status"
+          [class.status-occupied]="isTableOccupied(table)"
+          [class.status-inactive]="table.status === 'INACTIVE'"
+        >
+          {{ getTableStatusLabel(table) }}
+        </span>
+        <span class="table-attendant" *ngIf="table.attendedBy">{{ getAttendantLabel(table) }}</span>
+      </button>
+    </section>
+
+    <p *ngIf="isLoading" class="loading-message">Cargando mesas...</p>
+  </main>
+</div>

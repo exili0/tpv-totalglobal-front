@@ -1,0 +1,22 @@
+<div class="accessibility-page">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
+  <!--------------------------------------------->
+  <main class="accessibility-container">
+    <section class="settings-card">
+      <h1>Accesibilidad Visual</h1>
+      <p>Selecciona el perfil visual más adecuado según el tipo de daltonismo y contraste necesario.</p>
+
+      <div class="theme-options">
+        <button
+          *ngFor="let option of themeOptions"
+          type="button"
+          class="theme-option"
+          [class.theme-option--active]="isThemeSelected(option.value)"
+          (click)="setTheme(option.value)">
+          <span class="theme-title">{{ option.title }}</span>
+          <span class="theme-description">{{ option.description }}</span>
+        </button>
+      </div>
+    </section>
+  </main>
+</div>

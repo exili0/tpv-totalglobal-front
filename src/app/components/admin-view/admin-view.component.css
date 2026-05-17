@@ -1,0 +1,47 @@
+.menu-page {
+    margin: 0;
+    min-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.background-logo {
+    display: block;
+    max-width: min(70vw, 420px);
+    height: auto;
+    padding: 2rem;
+}
+
+.menu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #3a3a3a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.menu-btn:hover {
+    background-color: #555;
+    transform: translateY(-2px);
+}
+
+.menu-btn-icon {
+    font-size: 1.2rem;
+}

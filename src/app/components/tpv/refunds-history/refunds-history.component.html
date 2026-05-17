@@ -1,0 +1,49 @@
+<app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
+
+<section class="refunds-panel">
+  <div class="refunds-header">
+    <div>
+      <h3>Devoluciones</h3>
+      <p>Tickets con devoluciones registradas (totales o parciales).</p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadRefunds()" [disabled]="isLoading">
+      Actualizar
+    </button>
+  </div>
+
+  <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+
+  <div *ngIf="isLoading" class="state-box">Cargando devoluciones...</div>
+
+  <div *ngIf="!isLoading && !hasRefunds && !errorMessage" class="state-box">
+    No hay devoluciones registradas.
+  </div>
+
+  <div *ngIf="hasRefunds" class="table-wrap">
+    <table class="refunds-table">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Servicio</th>
+          <th>Hora cobro</th>
+          <th>Total cobrado</th>
+          <th>Devuelto</th>
+          <th>Pendiente</th>
+          <th>Método</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of tickets">
+          <td>#{{ ticket.paymentId }}</td>
+          <td>{{ ticket.serviceLabel }}</td>
+          <td>{{ ticket.paidAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ ticket.refundedAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

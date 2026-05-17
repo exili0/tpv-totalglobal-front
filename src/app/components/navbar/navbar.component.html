@@ -1,0 +1,116 @@
+<nav class="navbar">
+  <!-- IZQUIERDA DEL NAVBAR-->
+  <div class="navbar-left">
+    <button class="menu-button" type="button" (click)="toggleMenu()" aria-label="Abrir menú">
+      <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="#1f1f1f">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+      </svg>
+    </button>
+    <button class="logo-button" type="button" (click)="goToHome()" aria-label="Ir al menú principal">
+      <img src="assets/SoloLogoVerde.png" alt="Logo TPV" class="navbar-logo" />
+    </button>
+  </div>
+  <!-- DERECHA DEL NAVBAR-->
+  <div class="navbar-right">
+    <div class="navbar-action">
+      <button class="icon-button" (click)="toggleUserCard()" aria-label="Información usuario">
+        <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="#1f1f1f">
+          <path
+            d="M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" />
+        </svg>
+      </button>
+
+      <button class="icon-button" (click)="goToRoleView()" aria-label="Volver a vista principal">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/></svg>
+      </button>
+
+      <div class="user-card" *ngIf="isUserCardOpen">
+        <p class="user-card-row">
+          <span class="user-card-label">Usuario</span>
+          <span class="user-card-value">{{ displayUserName }}</span>
+        </p>
+        <p class="user-card-row">
+          <span class="user-card-label">Rol</span>
+          <span class="user-card-value">{{ displayUserRole }}</span>
+        </p>
+      </div>
+
+      <button class="icon-button" (click)="goToAccessibility()" aria-label="Accesibilidad visual">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m644-613 100-94-37-37-96 96 33 35Zm0 0-33-35 33 35ZM120-120v-190l357-357-57-57 57-56 77 76 124-124q5-5 12.5-8t15.5-3q8 0 15 3t13 8l94 94q5 6 8 13t3 15q0 8-3 15.5t-8 12.5L704-554l56 58-56 56-170-170-334 333v77h42q10 22 21.5 42t24.5 38H120Zm480 80q-91 0-168-48T320-220q35-84 112-132t168-48q91 0 168 48t112 132q-35 84-112 132T600-40Zm107.5-106q50.5-26 82.5-74-32-48-82.5-74T600-320q-57 0-107.5 26T410-220q32 48 82.5 74T600-120q57 0 107.5-26Zm-150-31.5Q540-195 540-220t17.5-42.5Q575-280 600-280t42.5 17.5Q660-245 660-220t-17.5 42.5Q625-160 600-160t-42.5-17.5Z"/></svg>
+      </button>
+
+      <button class="icon-button" (click)="openShiftModal()" aria-label="Turno de caja">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M160-120q-33 0-56.5-23.5T80-200v-80h80v80h640v-560H160v80H80v-80q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm240-160q17 0 28.5-11.5T440-320q0-17-11.5-28.5T400-360q-17 0-28.5 11.5T360-320q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320q0-17-11.5-28.5T560-360q-17 0-28.5 11.5T520-320q0 17 11.5 28.5T560-280ZM240-440h480v-240H240v240Z"/></svg>
+      </button>
+
+      <button class="icon-button" (click)="openZReportModal()" aria-label="Reporte Z">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M280-280h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h240v-80H280v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-440h200L560-760v200Z"/></svg>
+      </button>
+
+      <button class="icon-button" (click)="gotoRestorePassword()" aria-label="Cambiar contraseña">
+      <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="#1f1f1f">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path
+          d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+      </svg>
+    </button>
+    </div>
+
+    <button class="icon-button" (click)="goToLogin()" aria-label="Cerrar sesión">
+      <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="#1f1f1f">
+        <path
+          d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+      </svg>
+    </button>
+  </div>
+</nav>
+  <!--------------------------------------------->
+<div class="menu-backdrop" [class.menu-backdrop--transparent]="transparentBackdrop" *ngIf="isMenuOpen"
+  (click)="closeMenu()">
+  <aside class="side-menu" (click)="$event.stopPropagation()">
+    <img src="assets/SoloLogoVerde.png" alt="Logo TPV" class="navbar-logo" />
+    <div class="side-menu-header">
+      <span class="side-menu-title">Menú TPV_TotalGlobal</span>
+    </div>
+    <ul class="side-menu-list">
+      <li class="side-menu-item side-menu-section">
+        <span class="section-title">PUNTO DE VENTA</span>
+      </li>
+      <li class="side-menu-item"><button (click)="goToTPV(); closeMenu()">TPV - Ventas</button></li>
+      <li class="side-menu-item"><button (click)="openShiftModal()">Turno de caja</button></li>
+      <li class="side-menu-item"><button (click)="openZReportModal()">Reporte Z</button></li>
+      <li class="side-menu-item"><button (click)="goToTickets()">Tickets</button></li>
+      <li class="side-menu-item"><button (click)="goToRefunds()">Devoluciones</button></li>
+      <li class="side-menu-item"><button (click)="goToAccessibility(); closeMenu()">Accesibilidad visual</button></li>
+
+      <li class="side-menu-item side-menu-section" *ngIf="isAdmin">
+        <span class="section-title">ADMINISTRACIÓN</span>
+      </li>
+      <li class="side-menu-item" *ngIf="isAdmin"><button (click)="goToAdminCategories(); closeMenu()">Categorías</button></li>
+      <li class="side-menu-item" *ngIf="isAdmin"><button (click)="goToAdminProducts(); closeMenu()">Productos</button></li>
+      <li class="side-menu-item" *ngIf="isAdmin"><button (click)="goToUsersManagement(); closeMenu()">Usuarios</button></li>
+
+      <li class="side-menu-item side-menu-section">
+        <span class="section-title">INTEGRACIONES</span>
+      </li>
+      <li class="side-menu-item side-menu-placeholder" aria-disabled="true">
+        <div class="placeholder-title">Integracion API Glovo</div>
+        <div class="placeholder-subtitle">Próximamente</div>
+      </li>
+    </ul>
+  </aside>
+</div>
+  <!--------------------------------------------->
+<div class="ops-modal-backdrop" *ngIf="isShiftModalOpen || isZReportModalOpen" (click)="closeOperationalModal()">
+  <section class="ops-modal" (click)="$event.stopPropagation()">
+    <div class="ops-modal-header">
+      <h3 *ngIf="isShiftModalOpen">Turno de caja</h3>
+      <h3 *ngIf="isZReportModalOpen">Reporte Z diario</h3>
+      <button type="button" class="ops-close" (click)="closeOperationalModal()">Cerrar</button>
+    </div>
+
+    <app-shift-control *ngIf="isShiftModalOpen"></app-shift-control>
+    <app-daily-z-report *ngIf="isZReportModalOpen"></app-daily-z-report>
+  </section>
+</div>

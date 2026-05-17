@@ -1,0 +1,23 @@
+<section class="keypad-panel">
+  <div class="keypad-header">
+    <span>Cantidad</span>
+    <strong>{{ mode === 'subtract' ? '-' : '' }}{{ quantity }}</strong>
+  </div>
+
+  <div class="keypad-actions">
+    <button type="button" [class.active]="mode === 'add'" (click)="pressAdd()">+</button>
+    <button type="button" [class.active]="mode === 'subtract'" (click)="pressSubtract()">-</button>
+    <button type="button" (click)="clear()">C</button>
+    <button type="button" (click)="backspace()">⌫</button>
+  </div>
+
+  <div class="digits-grid">
+    <button
+      type="button"
+      *ngFor="let digit of digits"
+      [class.pressed]="quantity.toString().endsWith(digit.toString())"
+      (click)="pressDigit(digit)">
+      {{ digit }}
+    </button>
+  </div>
+</section>

@@ -1,0 +1,180 @@
+<app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
+
+<section class="tickets-panel">
+  <div class="tickets-header">
+    <div>
+      <h3>Tickets cobrados</h3>
+      <p>Consulta tickets de mesa o barra y registra devoluciones.</p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadTickets()" [disabled]="isLoading">
+      Actualizar
+    </button>
+  </div>
+
+  <p *ngIf="feedbackMessage" class="msg-ok">{{ feedbackMessage }}</p>
+  <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+
+  <div *ngIf="isLoading" class="state-box">Cargando tickets...</div>
+
+  <div *ngIf="!isLoading && !hasTickets && !errorMessage" class="state-box">
+    No hay tickets registrados.
+  </div>
+
+  <div *ngIf="hasTickets" class="table-wrap">
+    <table class="tickets-table">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Servicio</th>
+          <th>Hora cobro</th>
+          <th>Importe</th>
+          <th>Cantidad</th>
+          <th>Método</th>
+          <th>Pendiente</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of tickets">
+          <td>#{{ ticket.paymentId }}</td>
+          <td>{{ ticket.serviceLabel }}</td>
+          <td>{{ ticket.paidAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ ticket.totalItems }}</td>
+          <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
+          <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>
+            <button type="button" class="btn-view" (click)="openTicket(ticket)" [disabled]="isLoadingDetail">
+              Ver ticket
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+  <section class="ticket-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>Detalle del ticket</h4>
+      <button type="button" class="close-btn" (click)="closeModal()">Cerrar</button>
+    </div>
+
+    <div *ngIf="selectedTicket" class="modal-body">
+      <div class="ticket-meta">
+        <p><strong>Ticket:</strong> #{{ selectedTicket.paymentId }}</p>
+        <p><strong>Servicio:</strong> {{ selectedTicket.serviceLabel }}</p>
+        <p><strong>Hora cobro:</strong> {{ selectedTicket.paidAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Importe total:</strong> {{ selectedTicket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="lines-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Devuelta</th>
+              <th>Pendiente</th>
+              <th>Precio unit.</th>
+              <th>Total línea</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of selectedTicket.lines">
+              <td>{{ line.productName }}</td>
+              <td>{{ line.quantity }}</td>
+              <td>{{ line.refundedQuantity }}</td>
+              <td>{{ line.refundableQuantity }}</td>
+              <td>{{ line.unitPrice | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+              <td>{{ line.lineTotal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="refund-box">
+        <p><strong>Ya devuelto:</strong> {{ selectedTicket.refundedAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+        <p><strong>Pendiente:</strong> {{ selectedTicket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+
+        <div *ngIf="selectedTicket.refundableAmount > 0" class="refund-form">
+          <label>Tipo de devolución</label>
+          <div class="mode-grid">
+            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'FULL_TICKET'" (click)="setRefundMode('FULL_TICKET')">
+              Completa (ticket)
+            </button>
+            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'PARTIAL_TICKET'" (click)="setRefundMode('PARTIAL_TICKET')">
+              Parcial (importe)
+            </button>
+            <button
+              type="button"
+              class="mode-btn"
+              [class.mode-btn--active]="refundMode === 'BY_PRODUCT'"
+              (click)="setRefundMode('BY_PRODUCT')"
+              [disabled]="!canRefundByProduct"
+            >
+              Parcial (producto)
+            </button>
+          </div>
+
+          <ng-container *ngIf="refundMode === 'PARTIAL_TICKET' || refundMode === 'FULL_TICKET'">
+            <label for="refundAmount">Importe a devolver</label>
+            <input
+              id="refundAmount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              [max]="selectedTicket.refundableAmount"
+              [(ngModel)]="refundAmount"
+              [readonly]="refundMode === 'FULL_TICKET'"
+            />
+          </ng-container>
+
+          <ng-container *ngIf="refundMode === 'BY_PRODUCT'">
+            <label for="refundLine">Producto</label>
+            <select id="refundLine" [(ngModel)]="selectedLineId" (ngModelChange)="onSelectedLineChange()">
+              <option [ngValue]="null" disabled>Selecciona producto</option>
+              <option *ngFor="let line of selectedTicket.lines" [ngValue]="line.lineId" [disabled]="line.refundableQuantity <= 0">
+                {{ line.productName }} (pendiente: {{ line.refundableQuantity }})
+              </option>
+            </select>
+
+            <label for="refundLineQty">Cantidad a devolver</label>
+            <input
+              id="refundLineQty"
+              type="number"
+              min="1"
+              step="1"
+              [max]="getSelectedLineMaxQuantity()"
+              [(ngModel)]="selectedLineQuantity"
+            />
+          </ng-container>
+
+          <label for="refundReason">Motivo (opcional)</label>
+          <input
+            id="refundReason"
+            type="text"
+            maxlength="250"
+            [(ngModel)]="refundReason"
+            placeholder="Ejemplo: producto devuelto"
+          />
+
+          <button
+            type="button"
+            class="btn-refund"
+            (click)="registerRefund()"
+            [disabled]="isRefunding"
+          >
+            {{ isRefunding ? 'Procesando...' : 'Registrar devolución' }}
+          </button>
+        </div>
+
+        <p *ngIf="selectedTicket.refundableAmount <= 0" class="msg-ok">
+          Este ticket ya está devuelto por completo.
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

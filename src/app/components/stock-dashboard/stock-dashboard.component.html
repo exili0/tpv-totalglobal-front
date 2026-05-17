@@ -1,0 +1,158 @@
+<div class="stock-dashboard">
+  <div class="dashboard-header">
+    <h1>📊 Dashboard de Stock Automatizado</h1>
+    <p class="subtitle">Análisis de movimientos, pérdidas y estadísticas de desechos</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-container">
+    <div class="kpi-card total-waste">
+      <div class="kpi-icon">🗑️</div>
+      <div class="kpi-content">
+        <p class="kpi-label">Pérdidas Totales</p>
+        <h3 class="kpi-value">{{ totalWaste }}</h3>
+        <p class="kpi-unit">unidades perdidas</p>
+      </div>
+    </div>
+
+    <div class="kpi-card products-tracked">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-content">
+        <p class="kpi-label">Productos Analizados</p>
+        <h3 class="kpi-value">{{ wasteSummaryEntries.length }}</h3>
+        <p class="kpi-unit">con pérdidas registradas</p>
+      </div>
+    </div>
+
+    <div class="kpi-card efficiency">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-content">
+        <p class="kpi-label">Indicador de Eficiencia</p>
+        <h3 class="kpi-value" [ngClass]="{'low': totalWaste > 100, 'medium': totalWaste <= 100 && totalWaste > 20, 'high': totalWaste <= 20}">
+          {{ totalWaste > 100 ? 'Bajo' : (totalWaste > 20 ? 'Medio' : 'Alto') }}
+        </h3>
+        <p class="kpi-unit">Control de pérdidas</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro de Fechas -->
+  <div class="filters-section">
+    <h3>Filtros</h3>
+    <div class="filter-group">
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de inicio</mat-label>
+        <input matInput type="date" [(ngModel)]="startDate">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de fin</mat-label>
+        <input matInput type="date" [(ngModel)]="endDate">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="applyDateFilter()">
+        Aplicar Filtro
+      </button>
+
+      <button mat-raised-button color="accent" (click)="downloadReport()">
+        📥 Descargar Reporte
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de Productos con Pérdidas -->
+  <div class="data-section">
+    <h3>Top Productos con Pérdidas</h3>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando datos...</p>
+    </div>
+
+    <div *ngIf="!loading && wasteSummaryEntries.length > 0" class="waste-summary">
+      <div class="waste-item" *ngFor="let item of wasteSummaryEntries | slice:0:5">
+        <div class="waste-info">
+          <p class="product-name">{{ getProductName($any(item).key) }}</p>
+          <p class="waste-quantity">{{ $any(item).value }} unidades</p>
+        </div>
+        <div class="waste-bar">
+          <div class="bar-container">
+            <div class="bar-fill" [style.width.%]="($any(item).value / maxWasteValue) * 100"></div>
+          </div>
+          <p class="percentage">{{ getWastePercentage($any(item).key) }}%</p>
+        </div>
+        <button mat-icon-button matTooltip="Ver detalles" (click)="selectProduct($any(item).key)">
+          <mat-icon>info</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && wasteSummaryEntries.length === 0" class="no-data">
+      <p>✓ No hay pérdidas registradas en el período seleccionado</p>
+    </div>
+  </div>
+
+  <!-- Detalles del Producto Seleccionado -->
+  <div *ngIf="selectedProduct" class="detail-section">
+    <h3>Histórico de Desechos: {{ selectedProduct.name }}</h3>
+
+    <div class="waste-history">
+      <mat-table [dataSource]="selectedProductWaste" class="waste-table">
+
+        <!-- Columna Motivo -->
+        <ng-container matColumnDef="reason">
+          <mat-header-cell *matHeaderCellDef>Motivo</mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.reason || 'No especificado' }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Columna Cantidad -->
+        <ng-container matColumnDef="quantity">
+          <mat-header-cell *matHeaderCellDef>Cantidad</mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.quantity }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Columna Fecha -->
+        <ng-container matColumnDef="createdAt">
+          <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.createdAt | date:'short' }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+      </mat-table>
+    </div>
+
+    <button mat-button (click)="selectedProduct = null">
+      Cerrar Detalles
+    </button>
+  </div>
+
+  <!-- Resumen y Conclusiones -->
+  <div class="insights-section">
+    <h3>📌 Insights Estratégicos</h3>
+
+    <div class="insights-grid">
+      <div class="insight-card">
+        <h4>Control Optimizado</h4>
+        <p>El sistema de stock automatizado reduce errores de gestión y proporciona visibilidad en tiempo real.</p>
+      </div>
+
+      <div class="insight-card">
+        <h4>Diferencial del TPV</h4>
+        <p>Las estadísticas de desechos te permiten identificar productos problemáticos y optimizar tu catálogo.</p>
+      </div>
+
+      <div class="insight-card">
+        <h4>Datos para Decisiones</h4>
+        <p>Utiliza estos reportes para negociar mejores términos con proveedores o optimizar precios.</p>
+      </div>
+    </div>
+  </div>
+</div>

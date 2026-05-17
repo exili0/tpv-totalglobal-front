@@ -1,0 +1,257 @@
+.admin-container {
+  padding: 20px;
+  background-color: var(--white);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--secondary-color);
+  padding-bottom: 12px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--primary-color);
+}
+
+.btn-new {
+  padding: 10px 16px;
+  background-color: var(--success-color);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-new:hover {
+  background-color: var(--success-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--overlay-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.form-content {
+  background-color: var(--white);
+  padding: 32px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: var(--border-primary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--surface-light);
+}
+
+.page-content {
+  flex: 1;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.back-btn-container {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  color: var(--text-color, #1b1a1a);
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-back:hover {
+  background-color: var(--primary-soft);
+  transform: scale(1.1);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--primary-color);
+  flex: 1;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+.error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border-radius: 4px;
+}
+
+.products-table {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--white);
+  border: var(--border-primary);
+}
+
+th {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--light-bg);
+  font-size: 14px;
+}
+
+tr:hover {
+  background-color: var(--surface-light);
+}
+
+.active {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.inactive {
+  color: var(--danger-color);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-edit, .btn-activate, .btn-deactivate, .btn-delete {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-edit {
+  background-color: var(--secondary-color);
+  color: var(--white);
+}
+
+.btn-edit:hover {
+  background-color: var(--secondary-dark);
+}
+
+.btn-activate {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.btn-activate:hover {
+  background-color: var(--success-dark);
+}
+
+.btn-deactivate {
+  background-color: var(--warning-color);
+  color: var(--white);
+}
+
+.btn-deactivate:hover {
+  background-color: var(--warning-dark);
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+  color: var(--white);
+}
+
+.btn-delete:hover {
+  background-color: var(--danger-dark);
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 12px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .actions {
+    gap: 4px;
+  }
+  .btn-edit, .btn-activate, .btn-deactivate, .btn-delete {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}

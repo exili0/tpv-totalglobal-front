@@ -1,0 +1,14 @@
+.menu-page {
+    margin: 0;
+    min-height: calc(100vh - 100px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.background-logo {
+    display: block;
+    max-width: min(70vw, 420px);
+    height: auto;
+    padding: 2rem;
+}

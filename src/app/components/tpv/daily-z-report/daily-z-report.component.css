@@ -1,0 +1,74 @@
+.z-panel {
+  background-color: var(--sidebar-bg);
+  border: var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+
+.z-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.z-header h3 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 15px;
+}
+
+.date-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-actions input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 7px 8px;
+  background-color: var(--white);
+}
+
+.date-actions button {
+  margin: 0;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--white);
+  font-weight: 700;
+}
+
+.z-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.z-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--white);
+}
+
+.z-item span {
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.z-item strong {
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.msg-error {
+  margin: 0 0 8px;
+  color: var(--danger-color);
+}

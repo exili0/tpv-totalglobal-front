@@ -1,0 +1,384 @@
+.navbar {
+    width: 100%;
+    height: 80px;
+    /* Altura del navbar dada de tal forma que se mantenga consistente en toda la aplicación */
+
+    background-color: var(--secondary-soft);
+    color: var(--primary-color);
+    padding: 0 20px;
+    box-sizing: border-box;
+    /**/
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/*Parte Logo*/
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.navbar-logo {
+    height: 45px;
+    width: auto;
+    cursor: pointer;
+    margin-bottom: 14px;
+
+        margin-top: 5px;
+        margin-left: 10px;
+
+}
+
+
+.logo-button {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.logo-button:hover {
+    opacity: 0.7;
+    transform: scale(1.05);
+}
+
+/*Parte SVGs*/
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.navbar-action {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.icon-button {
+    margin: 0;
+    padding: 6px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-button:hover {
+    background: var(--surface-bg);
+    box-shadow: var(--shadow-soft);
+}
+
+.icon-button svg {
+    width: 34px;
+    height: 34px;
+}
+
+.user-card {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 220px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface-bg);
+    color: var(--text-color);
+    box-shadow: var(--shadow-strong);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    z-index: 20;
+}
+
+.user-card-row {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-card-row + .user-card-row {
+    margin-top: 10px;
+}
+
+.user-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted, #6b7280);
+}
+
+.user-card-value,
+.user-card-loading {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-card-loading {
+    margin: 0;
+}
+
+.menu-button {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: transparent;
+    margin-top: 0;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.menu-button:hover {
+    opacity: 0.7;
+    transform: scale(1.05);
+}
+
+.menu-button:active {
+    transform: scale(0.95);
+}
+
+button {
+    /*Todos los botones sin borde y sin fondo para mantener la estética del navbar*/
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/*-------------------------------*/
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--overlay-bg);
+    display: flex;
+}
+
+.menu-backdrop--transparent {
+    background: transparent;
+}
+
+.ops-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+.ops-modal {
+    width: min(560px, 96vw);
+    max-height: 84vh;
+    overflow-y: auto;
+    background: var(--surface-bg);
+    border: var(--border-primary);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: var(--shadow-strong);
+}
+
+.ops-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.ops-modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.ops-close {
+    margin: 0;
+    min-height: 34px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: var(--white);
+    font-weight: 700;
+}
+
+.side-menu {
+    width: 300px;
+    max-width: 80vw;
+    height: 100vh;
+    background: var(--surface-bg);
+    box-shadow: var(--shadow-strong);
+    padding: 16px 18px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.side-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.side-menu-title {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.side-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.side-menu-item {
+    padding: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-color);
+    background: var(--secondary-soft);
+}
+
+.side-menu-item button {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    color: inherit;
+    font: inherit;
+}
+
+.side-menu-item:hover {
+    background: var(--surface-muted-hover);
+}
+
+.side-menu-placeholder {
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--secondary-soft) 75%, var(--white) 25%);
+    border: 1px dashed var(--border-color);
+    cursor: default;
+}
+
+.side-menu-placeholder:hover {
+    background: color-mix(in srgb, var(--secondary-soft) 75%, var(--white) 25%);
+}
+
+.placeholder-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.placeholder-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.section-title {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+
+/* Media query adicionales para mejor responsividad */
+@media (max-width: 1024px) {
+    .navbar {
+        height: 70px;
+        padding: 0 15px;
+    }
+
+    .navbar-left {
+        gap: 10px;
+    }
+
+    .navbar-right {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        height: 60px;
+        padding: 0 12px;
+    }
+
+    .navbar-right {
+        gap: 10px;
+    }
+
+    .navbar-logo {
+        height: 30px;
+    }
+
+    .icon-button svg {
+        width: 30px;
+        height: 30px;
+    }
+
+    .user-card {
+        right: -24px;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /*Pensado para móviles  muy pequeños*/
+    .navbar {
+        height: 55px;
+        padding: 0 10px;
+    }
+
+    .navbar-left {
+        gap: 8px;
+    }
+
+    .navbar-right {
+        gap: 8px;
+    }
+
+    .navbar-logo {
+        height: 25px;
+    }
+
+    .icon-button svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .user-card {
+        right: -40px;
+        min-width: 180px;
+    }
+
+    .side-menu {
+        width: 250px;
+        padding: 12px 14px;
+    }
+}

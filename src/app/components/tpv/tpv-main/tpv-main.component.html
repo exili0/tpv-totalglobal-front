@@ -1,0 +1,63 @@
+<div class="page-wrapper">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
+
+  <div class="tpv-main-container">
+    <div class="categories-backdrop" *ngIf="isCategoriesPanelOpen" (click)="closeCategoriesPanel()"></div>
+
+    <aside class="categories-drawer" [class.open]="isCategoriesPanelOpen">
+      <div class="categories-drawer-header">
+        <h2>Categorías</h2>
+        <button type="button" class="btn-close-categories" (click)="closeCategoriesPanel()" aria-label="Cerrar categorías">×</button>
+      </div>
+
+      <div class="categories-drawer-content">
+        <div *ngIf="isLoading" class="loading">
+          <p>Cargando...</p>
+        </div>
+
+        <div *ngIf="error" class="error">
+          <p>{{error}}</p>
+        </div>
+
+        <div *ngIf="!isLoading && categories.length > 0" class="categories-list">
+            <button *ngFor="let category of categories; let i = index"
+                  (click)="selectCategory(category)"
+              [ngStyle]="getCategoryButtonStyles(category, i)"
+                  class="category-btn">
+            {{category.name}}
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="main-toolbar">
+        <button type="button" class="btn-categories" (click)="goToTables()">Mesas</button>
+        <button type="button" class="btn-categories" (click)="toggleCategoriesPanel()">Categorías</button>
+        <span class="table-chip" *ngIf="selectedTableNumber !== null">
+          {{ selectedTableNumber === 0 ? 'Barra (Mesa 0)' : ('Mesa ' + selectedTableNumber) }}
+        </span>
+      </div>
+
+      <app-quantity-keypad></app-quantity-keypad>
+
+      <div *ngIf="selectedCategory === null" class="welcome">
+        <h1>Selecciona una Categoría</h1>
+        <p>Elige una categoría para ver los productos disponibles</p>
+      </div>
+
+      <div *ngIf="selectedCategory" class="product-section">
+        <div class="header">
+          <button (click)="goBack()" class="btn-back">← Volver</button>
+          <h2>{{selectedCategory.name}}</h2>
+        </div>
+        <app-product-grid [category]="selectedCategory"></app-product-grid>
+      </div>
+    </div>
+
+    <div class="cart-section">
+      <app-cart></app-cart>
+      <app-order-summary></app-order-summary>
+    </div>
+  </div>
+</div>

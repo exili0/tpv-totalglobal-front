@@ -1,0 +1,211 @@
+.tickets-panel {
+  background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--white) 100%);
+  border: var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.tickets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.tickets-header h3 {
+  margin: 0 0 4px;
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.tickets-header p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.refresh-button,
+.btn-view,
+.btn-refund,
+.close-btn {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.refresh-button,
+.btn-view,
+.btn-refund {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.close-btn {
+  background: var(--white);
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.msg-error {
+  margin: 0 0 10px;
+  color: var(--danger-color);
+}
+
+.msg-ok {
+  margin: 0 0 10px;
+  color: var(--success-color, #1b8f3b);
+}
+
+.state-box {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-color);
+  color: var(--text-light);
+  background: var(--white);
+}
+
+.table-wrap {
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: var(--white);
+}
+
+.tickets-table,
+.lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.tickets-table thead,
+.lines-table thead {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.tickets-table th,
+.tickets-table td,
+.lines-table th,
+.lines-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 1200;
+}
+
+.ticket-modal {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modal-header h4 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.modal-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ticket-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.ticket-meta p {
+  margin: 0;
+}
+
+.refund-box {
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.refund-box p {
+  margin: 0;
+}
+
+.refund-form {
+  display: grid;
+  gap: 8px;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mode-btn {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode-btn--active {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+.mode-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refund-form label {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.refund-form input {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 8px 10px;
+}
+
+.refund-form select {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 8px 10px;
+  background: var(--white);
+}

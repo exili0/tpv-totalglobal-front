@@ -1,0 +1,141 @@
+<div class="users-managament-wrapper">
+    <app-navbar></app-navbar>
+
+    <div class="managament-content">
+        <h2>Usuarios</h2>
+        
+        <div class="table-header">
+            <button (click)="gotoAdminView()" class="icon-button back-btn-container" title="Volver" aria-label="Volver al menú administrador">
+                <div class="btn-back">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                        <rect fill="none" height="24" width="24" />
+                        <g><polygon points="17.77,3.77 16,2 6,12 16,22 17.77,20.23 9.54,12" /></g>
+                    </svg>
+                </div>
+            </button>
+
+            <button class="btn-add" type="button" title="Añadir" aria-label="Añadir" (click)="openAddUserModal()">+</button>
+        </div>
+
+        <div class="modal-overlay" *ngIf="showAddUserModal" (click)="closeAddUserModal()">
+            <div class="add-user-modal" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Nuevo usuario</h3>
+                    <button class="btn-modal-close" type="button" (click)="closeAddUserModal()" aria-label="Cerrar modal"> × </button>
+                </div>
+
+                <div class="form-row form-row-top">
+                    <input type="text" placeholder="Nombre" [(ngModel)]="newUserForm.name" (input)="updateAlias()">
+                    <input type="text" placeholder="Apellidos" [(ngModel)]="newUserForm.lastname" (input)="updateAlias()">    
+                    <input type="text" placeholder="Alias (Usuario)" [(ngModel)]="newUserForm.alias" required>
+                </div>
+
+                <div class="form-row form-row-bottom">
+                    <input type="text" placeholder="Email" [(ngModel)]="newUserForm.email" required>
+                    <input type="date" [(ngModel)]="newUserForm.date">
+                    <select class="role-select" [(ngModel)]="newUserForm.role">
+                        <option value="COMMON_USER">Usuario común</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+
+                <p class="info-text">El usuario establecerá su contraseña en el primer login</p>
+
+                <button class="btn-save" type="button" (click)="saveNewUser()" title="Guardar">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#1f1f1f">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" *ngIf="showEditUserModal" (click)="closeEditUserModal()">
+            <div class="add-user-modal" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Editar usuario</h3>
+                    <button class="btn-modal-close" type="button" (click)="closeEditUserModal()" aria-label="Cerrar modal"> × </button>
+                </div>
+
+                <div class="form-row form-row-top">
+                    <input type="text" placeholder="Nombre" [(ngModel)]="editUserForm.name">
+                    <input type="text" placeholder="Apellidos" [(ngModel)]="editUserForm.lastname">
+                    <input type="text" placeholder="Alias (Usuario)" [(ngModel)]="editUserForm.alias" required>
+                </div>
+
+                <div class="form-row form-row-bottom">
+                    <input type="text" placeholder="Email" [(ngModel)]="editUserForm.email" required>
+                    <input type="date" [(ngModel)]="editUserForm.date">
+                    <select class="role-select" [(ngModel)]="editUserForm.role">
+                        <option value="COMMON_USER">Usuario común</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+
+                <p class="info-text">Para cambiar contraseña, usar "Restaurar contraseña"</p>
+
+                <button class="btn-save" type="button" (click)="saveEditUser()" title="Guardar">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#1f1f1f">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>COD</th>
+                        <th>ALIAS</th>
+                        <th>NOMBRE</th>
+                        <th>APELLIDO</th>
+                        <th>EMAIL</th>
+                        <th>FECHA</th>
+                        <th>ACTIVO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of displayUsers">
+                        <td>{{user.cod}}</td>
+                        <td>{{user.alias}}</td>
+                        <td>{{user.name}}</td>
+                        <td>{{user.lastname}}</td>
+                        <td>{{user.email}}</td>
+                        <td>{{ formatDisplayDate(user.date) }}</td>
+                        <td class="active-cell">
+                            <span class="custom-checkbox" [class.active]="user.active" (click)="toggleUserActive(user)" *ngIf="user.cod">
+                                <svg *ngIf="user.active" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#fff">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                </svg>
+                            </span>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="btn-action btn-edit" type="button" title="Editar" *ngIf="user.cod" (click)="openEditUserModal(user)">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 24 24" width="30px" fill="#1f1f1f">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                </svg>
+                            </button>
+                            <button class="btn-action btn-indicateFirstLogin" [class.first-login-active]="user.firstLogin" type="button" [title]="user.firstLogin ? 'Alta pendiente: el usuario aún no ha completado su registro' : 'Reactivar proceso de alta'" [disabled]="user.firstLogin" (click)="triggerFirstLogin(user)" *ngIf="user.cod">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 24 24" width="30px" fill="currentColor">
+                                    <path d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-action btn-delete" type="button" title="Eliminar" *ngIf="user.cod" (click)="deleteUser(user)">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 24 24" width="30px" fill="#1f1f1f">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table> 
+        </div>
+    </div>
+</div>
