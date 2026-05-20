@@ -45,8 +45,16 @@ export class TpvMainComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const tableNumber = Number(this.route.snapshot.paramMap.get('tableNumber'));
-    if (Number.isNaN(tableNumber)) {
+    // Comprobamos primero si el param existe: Number(null) === 0, (no es NaN),
+    // por lo que sin esta guarda se reservaría la mesa 0 silenciosamente
+    const param = this.route.snapshot.paramMap.get('tableNumber');
+    if (!param) {
+      this.router.navigate(['/tpv']);
+      return;
+    }
+    const tableNumber = Number(param);
+    // isFinite cubre también Infinity y NaN
+    if (!Number.isFinite(tableNumber)) {
       this.router.navigate(['/tpv']);
       return;
     }

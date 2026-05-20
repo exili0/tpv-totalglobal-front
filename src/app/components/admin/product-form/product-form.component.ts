@@ -92,6 +92,9 @@ export class ProductFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        // Reseteamos isLoading antes de emitir para que el botón no quede bloqueado
+        // si el padre reutiliza el formulario sin destruirlo.
+        this.isLoading = false;
         this.formSubmitted.emit();
       },
       error: (err) => {

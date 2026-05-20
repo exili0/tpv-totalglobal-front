@@ -108,7 +108,9 @@ export class CartService {
       return;
     }
 
-    const currentItems = this.cartItems$.value;
+    // Clonamos antes de mutar: si modificamos this.cartItems$.value directamente,
+    // la emisión anterior y la nueva comparten referencia y Angular no detecta el cambio.
+    const currentItems = this.cloneItems(this.cartItems$.value);
     const existingItem = currentItems.find(item => item.productId === product.id);
 
     if (existingItem) {
@@ -161,7 +163,9 @@ export class CartService {
       return;
     }
 
-    const currentItems = this.cartItems$.value;
+    // Mismo patrón que addToCart: clonar antes de mutar para no alterar
+    // la referencia viva del BehaviorSubject y garantizar detección de cambios.
+    const currentItems = this.cloneItems(this.cartItems$.value);
     const item = currentItems.find(i => i.productId === productId);
 
     if (item) {

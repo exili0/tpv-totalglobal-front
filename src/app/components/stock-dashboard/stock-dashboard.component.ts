@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -77,11 +79,30 @@ export class StockDashboardComponent implements OnInit {
   }
 
   loadAllData(): void {
+    if (!this.startDate || !this.endDate) {
+      return;
+    }
     this.loading = true;
-    this.getTotalWaste();
-    this.getWasteSummary();
-    this.getWasteStatistics();
-    this.getMovements();
+
+    // forkJoin espera a que las 4 llamadas completen antes de resetear el spinner.
+    // catchError en cada rama evita que un fallo individual cancele las demás.
+    forkJoin([
+      this.stockService.getTotalWaste().pipe(catchError(() => of(null))),
+      this.stockService.getWasteSummary().pipe(catchError(() => of(null))),
+      this.stockService.getWasteStatistics(this.startDate, this.endDate).pipe(catchError(() => of(null))),
+      this.stockService.getMovementsByDateRange(this.startDate, this.endDate).pipe(catchError(() => of(null))),
+    ]).subscribe({
+      next: ([totalWasteRes, wasteSummaryRes, wasteStatsRes, movementsRes]) => {
+        this.totalWaste = Number((totalWasteRes as any)?.totalWaste ?? 0);
+        this.wasteSummary = (wasteSummaryRes ?? {}) as Record<string, number>;
+        this.wasteList = Array.isArray(wasteStatsRes) ? wasteStatsRes : [];
+        this.movementsList = Array.isArray(movementsRes) ? movementsRes : [];
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   getTotalWaste(): void {
@@ -174,9 +195,26 @@ export class StockDashboardComponent implements OnInit {
   }
 
   applyDateFilter(): void {
+    if (!this.startDate || !this.endDate) {
+      return;
+    }
     this.loading = true;
-    this.getWasteStatistics();
-    this.getMovements();
+
+    // Mismo patrón que loadAllData: forkJoin garantiza que loading se resetea
+    // solo cuando ambas llamadas han terminado, sin importar cuál acabe primero.
+    forkJoin([
+      this.stockService.getWasteStatistics(this.startDate, this.endDate).pipe(catchError(() => of(null))),
+      this.stockService.getMovementsByDateRange(this.startDate, this.endDate).pipe(catchError(() => of(null))),
+    ]).subscribe({
+      next: ([wasteStatsRes, movementsRes]) => {
+        this.wasteList = Array.isArray(wasteStatsRes) ? wasteStatsRes : [];
+        this.movementsList = Array.isArray(movementsRes) ? movementsRes : [];
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   getProductName(productId: number): string {
