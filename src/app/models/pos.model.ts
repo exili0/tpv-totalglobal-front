@@ -72,6 +72,8 @@ export interface PaymentRequest {
   saleOrderId: number;
   paymentMethod: PaymentMethod;
   amount: number;
+  /** Solo se usa cuando el cobro es en efectivo; representa el dinero entregado por el cliente. */
+  receivedAmount?: number;
 }
 
 /** Entidad de cobro realizada. */
@@ -80,6 +82,8 @@ export interface Payment {
   saleOrder: SaleOrder;
   paymentMethod: PaymentMethod;
   amount: number;
+  /** Importe entregado, útil para efectivo y cálculo de cambio. */
+  receivedAmount?: number | null;
   paidAt: string;
 }
 

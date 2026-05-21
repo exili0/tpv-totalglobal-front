@@ -8,6 +8,7 @@ import { PosOperationsService } from '../../../services/pos-operations.service';
 import { NavbarComponent } from '../../navbar/navbar.component';
 
 type RefundMode = 'FULL_TICKET' | 'PARTIAL_TICKET' | 'BY_PRODUCT';
+type TicketModalMode = 'VIEW' | 'REFUND';
 
 @Component({
   selector: 'app-tickets-history',
@@ -28,6 +29,7 @@ export class TicketsHistoryComponent implements OnInit {
   feedbackMessage: string | null = null;
 
   isModalOpen = false;
+  modalMode: TicketModalMode = 'VIEW';
   refundMode: RefundMode = 'PARTIAL_TICKET';
   refundAmount = 0;
   selectedLineId: number | null = null;
@@ -61,7 +63,7 @@ export class TicketsHistoryComponent implements OnInit {
       });
   }
 
-  openTicket(ticket: TicketSummary): void {
+  openTicketDetail(ticket: TicketSummary): void {
     this.errorMessage = null;
     this.feedbackMessage = null;
     this.isLoadingDetail = true;
@@ -72,16 +74,7 @@ export class TicketsHistoryComponent implements OnInit {
       .subscribe({
         next: (detail) => {
           this.selectedTicket = detail;
-          this.refundMode = 'PARTIAL_TICKET';
-          // Al abrir, dejamos preparada la devolución más común (importe parcial)
-          // para evitar pasos extra al cajero.
-          this.refundAmount = detail.refundableAmount;
-          const firstRefundableLine = detail.lines.find((line) => line.refundableQuantity > 0);
-          // Si hay líneas devolvibles, preseleccionamos la primera para acelerar
-          // la devolución por producto.
-          this.selectedLineId = firstRefundableLine?.lineId ?? null;
-          this.selectedLineQuantity = 1;
-          this.refundReason = '';
+          this.modalMode = 'VIEW';
           this.isModalOpen = true;
         },
         error: (error: unknown) => {
@@ -90,8 +83,61 @@ export class TicketsHistoryComponent implements OnInit {
       });
   }
 
+  openTicketForRefund(ticket: TicketSummary): void {
+    this.errorMessage = null;
+    this.feedbackMessage = null;
+    this.isLoadingDetail = true;
+
+    this.posOperationsService
+      .getTicketByPaymentId(ticket.paymentId)
+      .pipe(finalize(() => (this.isLoadingDetail = false)))
+      .subscribe({
+        next: (detail) => {
+          this.selectedTicket = detail;
+          this.modalMode = 'REFUND';
+          this.prepareRefundDefaults(detail);
+          this.isModalOpen = true;
+        },
+        error: (error: unknown) => {
+          this.errorMessage = this.getErrorMessage(error, 'No se pudo cargar el ticket');
+        },
+      });
+  }
+
+  downloadTicket(ticket: TicketSummary): void {
+    this.errorMessage = null;
+    this.feedbackMessage = null;
+    this.isLoadingDetail = true;
+
+    this.posOperationsService
+      .getTicketByPaymentId(ticket.paymentId)
+      .pipe(finalize(() => (this.isLoadingDetail = false)))
+      .subscribe({
+        next: (detail) => {
+          const ticketContent = this.buildTicketFileContent(detail);
+          const fileDate = this.formatDateForFilename(detail.paidAt);
+          const fileName = `ticket-${detail.paymentId}-${fileDate}.txt`;
+          this.triggerTextDownload(fileName, ticketContent);
+          this.feedbackMessage = 'Ticket descargado correctamente';
+        },
+        error: (error: unknown) => {
+          this.errorMessage = this.getErrorMessage(error, 'No se pudo descargar el ticket');
+        },
+      });
+  }
+
+  startRefundFromSelectedTicket(): void {
+    if (!this.selectedTicket) {
+      return;
+    }
+
+    this.modalMode = 'REFUND';
+    this.prepareRefundDefaults(this.selectedTicket);
+  }
+
   closeModal(): void {
     this.isModalOpen = false;
+    this.modalMode = 'VIEW';
     this.selectedTicket = null;
     this.refundMode = 'PARTIAL_TICKET';
     this.refundAmount = 0;
@@ -139,6 +185,10 @@ export class TicketsHistoryComponent implements OnInit {
   registerRefund(): void {
     if (!this.selectedTicket) {
       this.errorMessage = 'No hay ticket seleccionado';
+      return;
+    }
+    if (this.modalMode !== 'REFUND') {
+      this.errorMessage = 'Activa primero el modo de devolución';
       return;
     }
 
@@ -236,6 +286,144 @@ export class TicketsHistoryComponent implements OnInit {
       return null;
     }
     return this.selectedTicket.lines.find((line) => line.lineId === this.selectedLineId) ?? null;
+  }
+
+  private prepareRefundDefaults(detail: TicketDetail): void {
+    this.refundMode = 'PARTIAL_TICKET';
+    // Dejamos lista la devolución parcial, que suele ser la más frecuente en caja.
+    this.refundAmount = detail.refundableAmount;
+    const firstRefundableLine = detail.lines.find((line) => line.refundableQuantity > 0);
+    this.selectedLineId = firstRefundableLine?.lineId ?? null;
+    this.selectedLineQuantity = 1;
+    this.refundReason = '';
+  }
+
+  private buildTicketFileContent(ticket: TicketDetail): string {
+    const paidAtDate = new Date(ticket.paidAt);
+    const paidAtLabel = Number.isNaN(paidAtDate.getTime()) ? ticket.paidAt : paidAtDate.toLocaleString('es-ES');
+    const width = 86;
+    const sectionLine = this.buildReceiptSeparator(width);
+    const linesHeader = this.buildReceiptTableHeader();
+    const linesContent = ticket.lines.length > 0
+      ? ticket.lines.map((line) => this.buildReceiptTableRow(line)).join('\n')
+      : 'No hay lineas en este ticket.';
+
+    return [
+      sectionLine,
+      this.centerText('TPV TOTALGLOBAL', width),
+      this.centerText('TICKET', width),
+      sectionLine,
+      this.buildReceiptTwoColumnLine('Ticket', `#${ticket.paymentId}`, 'Servicio', ticket.serviceLabel, width),
+      this.buildReceiptTwoColumnLine('Fecha cobro', paidAtLabel, 'Metodo pago', this.getPaymentMethodLabel(ticket.paymentMethod), width),
+      this.buildReceiptTwoColumnLine('Importe total', this.formatCurrency(ticket.totalAmount), 'Devuelto', this.formatCurrency(ticket.refundedAmount), width),
+      this.buildReceiptTwoColumnLine('Pendiente devolucion', this.formatCurrency(ticket.refundableAmount), 'Notas', ticket.notes ?? '-', width),
+      sectionLine,
+      'LINEAS DEL TICKET',
+      sectionLine,
+      linesHeader,
+      sectionLine,
+      linesContent,
+      sectionLine,
+    ].join('\n');
+  }
+
+  private triggerTextDownload(fileName: string, content: string): void {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
+  }
+
+  private formatDateForFilename(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'fecha-desconocida';
+    }
+
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const hours = `${date.getHours()}`.padStart(2, '0');
+    const minutes = `${date.getMinutes()}`.padStart(2, '0');
+    return `${year}${month}${day}-${hours}${minutes}`;
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  private buildReceiptSeparator(width: number): string {
+    return '-'.repeat(width);
+  }
+
+  private centerText(text: string, width: number): string {
+    const trimmed = text.trim();
+    if (trimmed.length >= width) {
+      return trimmed;
+    }
+
+    const leftPadding = Math.floor((width - trimmed.length) / 2);
+    const rightPadding = width - trimmed.length - leftPadding;
+    return `${' '.repeat(leftPadding)}${trimmed}${' '.repeat(rightPadding)}`;
+  }
+
+  private buildReceiptTwoColumnLine(
+    leftLabel: string,
+    leftValue: string,
+    rightLabel: string,
+    rightValue: string,
+    width: number
+  ): string {
+    const leftBlockWidth = Math.floor(width / 2);
+    const rightBlockWidth = width - leftBlockWidth;
+    const leftBlock = this.formatReceiptField(leftLabel, leftValue, leftBlockWidth);
+    const rightBlock = this.formatReceiptField(rightLabel, rightValue, rightBlockWidth);
+    return `${leftBlock}${rightBlock}`;
+  }
+
+  private formatReceiptField(label: string, value: string, width: number): string {
+    const prefix = `${label}: `;
+    const maxValueLength = Math.max(0, width - prefix.length);
+    const safeValue = value.length > maxValueLength ? `${value.slice(0, Math.max(0, maxValueLength - 3))}...` : value;
+    return `${prefix}${safeValue}`.padEnd(width, ' ');
+  }
+
+  private buildReceiptTableHeader(): string {
+    return [
+      this.padRight('Producto', 28),
+      this.padLeft('Cant.', 6),
+      this.padLeft('P.Unit', 13),
+      this.padLeft('Total', 13),
+      this.padLeft('Dev.', 8),
+      this.padLeft('Pend.', 8),
+    ].join(' ');
+  }
+
+  private buildReceiptTableRow(line: TicketDetail['lines'][number]): string {
+    return [
+      this.padRight(line.productName, 28),
+      this.padLeft(String(line.quantity), 6),
+      this.padLeft(this.formatCurrency(line.unitPrice), 13),
+      this.padLeft(this.formatCurrency(line.lineTotal), 13),
+      this.padLeft(String(line.refundedQuantity), 8),
+      this.padLeft(String(line.refundableQuantity), 8),
+    ].join(' ');
+  }
+
+  private padRight(value: string, width: number): string {
+    return value.length >= width ? value.slice(0, width) : value.padEnd(width, ' ');
+  }
+
+  private padLeft(value: string, width: number): string {
+    return value.length >= width ? value.slice(0, width) : value.padStart(width, ' ');
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {

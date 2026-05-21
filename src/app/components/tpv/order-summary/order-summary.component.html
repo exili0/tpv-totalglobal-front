@@ -12,11 +12,33 @@
 
       <div class="service-mode">
         <label for="paymentMethod">Método de cobro</label>
-        <select id="paymentMethod" [value]="selectedPaymentMethod" (change)="selectedPaymentMethod = $any($event.target).value">
+        <select
+          id="paymentMethod"
+          [ngModel]="selectedPaymentMethod"
+          (ngModelChange)="onPaymentMethodChange($event, $any(summary).total)"
+          name="paymentMethod"
+        >
           <option value="CASH">Efectivo</option>
           <option value="CARD">Tarjeta</option>
           <option value="OTHER">Otro</option>
         </select>
+      </div>
+
+      <div *ngIf="selectedPaymentMethod === 'CASH'" class="service-mode">
+        <label for="cashReceivedAmount">Importe entregado</label>
+        <input
+          id="cashReceivedAmount"
+          type="number"
+          min="0"
+          step="0.01"
+          [ngModel]="cashReceivedAmount"
+          (ngModelChange)="cashReceivedAmount = $event"
+          name="cashReceivedAmount"
+          placeholder="Cantidad entregada por el cliente"
+        />
+        <small class="cash-hint" *ngIf="cashReceivedAmount > 0">
+          Cambio: {{ getCashChange($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </small>
       </div>
 
       <div class="service-mode">
@@ -44,7 +66,11 @@
         <strong>{{ $any(summary).total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
       </div>
 
-      <button (click)="processPayment()" [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null" class="btn-pay">
+      <button
+        (click)="processPayment()"
+        [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null || (selectedPaymentMethod === 'CASH' && cashReceivedAmount < $any(summary).total)"
+        class="btn-pay"
+      >
         {{ isProcessing ? 'Procesando...' : 'Cobrar' }}
       </button>
 

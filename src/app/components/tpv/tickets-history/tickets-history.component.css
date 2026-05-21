@@ -28,6 +28,8 @@
 
 .refresh-button,
 .btn-view,
+.btn-refund-action,
+.btn-refund-start,
 .btn-refund,
 .close-btn {
   min-height: 36px;
@@ -38,10 +40,80 @@
 }
 
 .refresh-button,
-.btn-view,
 .btn-refund {
   background: var(--primary-color);
   color: var(--white);
+}
+
+.btn-view {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.btn-refund-action,
+.btn-refund-start {
+  background: var(--success-color, #3a8f1b);
+  color: var(--white);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.icon-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: #000000 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  margin: 0 !important;
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 0;
+  line-height: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+}
+
+.icon-action-btn:hover:not(:disabled) {
+  background: var(--sidebar-bg);
+  border-color: var(--primary-color);
+}
+
+.icon-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.icon-action-btn svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.icon-action-btn svg path {
+  fill: #000000 !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .close-btn {
@@ -161,6 +233,10 @@
 .refund-form {
   display: grid;
   gap: 8px;
+}
+
+.view-actions {
+  display: flex;
 }
 
 .mode-grid {
