@@ -21,6 +21,18 @@
     No hay tickets registrados.
   </div>
 
+  <section *ngIf="tipLeaderboard.length > 0" class="tips-leaderboard">
+    <h4>Top propinas por empleado</h4>
+    <div class="tips-leaderboard-grid">
+      <article class="tip-card" *ngFor="let entry of tipLeaderboard; let index = index">
+        <p class="tip-card-rank">#{{ index + 1 }}</p>
+        <p class="tip-card-user">{{ entry.username }}</p>
+        <p class="tip-card-total">{{ entry.totalTips | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+        <p class="tip-card-count">{{ entry.ticketsWithTip }} tickets con propina</p>
+      </article>
+    </div>
+  </section>
+
   <div *ngIf="hasTickets" class="table-wrap">
     <table class="tickets-table">
       <thead>
@@ -31,6 +43,8 @@
           <th>Importe</th>
           <th>Cantidad</th>
           <th>Método</th>
+          <th>Cobrado por</th>
+          <th>Propina</th>
           <th>Pendiente</th>
           <th>Acciones</th>
         </tr>
@@ -43,6 +57,8 @@
           <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ ticket.totalItems }}</td>
           <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
+          <td>{{ getCollectorLabel(ticket.collectedBy) }}</td>
+          <td>{{ (ticket.tipAmount ?? 0) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>
             <div class="actions-cell">
@@ -110,7 +126,9 @@
         <p><strong>Ticket:</strong> #{{ selectedTicket.paymentId }}</p>
         <p><strong>Servicio:</strong> {{ selectedTicket.serviceLabel }}</p>
         <p><strong>Hora cobro:</strong> {{ selectedTicket.paidAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Cobrado por:</strong> {{ getCollectorLabel(selectedTicket.collectedBy) }}</p>
         <p><strong>Importe total:</strong> {{ selectedTicket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+        <p><strong>Propina:</strong> {{ (selectedTicket.tipAmount ?? 0) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
       </div>
 
       <div class="table-wrap">

@@ -74,6 +74,10 @@ export interface PaymentRequest {
   amount: number;
   /** Solo se usa cuando el cobro es en efectivo; representa el dinero entregado por el cliente. */
   receivedAmount?: number;
+  /** Usuario que registra el cobro en caja. */
+  cashierUsername?: string;
+  /** Propina opcional del cliente. */
+  tipAmount?: number;
 }
 
 /** Entidad de cobro realizada. */
@@ -84,6 +88,8 @@ export interface Payment {
   amount: number;
   /** Importe entregado, útil para efectivo y cálculo de cambio. */
   receivedAmount?: number | null;
+  collectedBy?: string | null;
+  tipAmount?: number;
   paidAt: string;
 }
 
@@ -97,8 +103,17 @@ export interface TicketSummary {
   totalAmount: number;
   totalItems: number;
   paymentMethod: PaymentMethod;
+  collectedBy?: string | null;
+  tipAmount?: number;
   refundedAmount: number;
   refundableAmount: number;
+}
+
+/** Agregado de propinas por empleado para ranking. */
+export interface TipLeaderboardEntry {
+  username: string;
+  totalTips: number;
+  ticketsWithTip: number;
 }
 
 /** Línea de detalle de ticket. */

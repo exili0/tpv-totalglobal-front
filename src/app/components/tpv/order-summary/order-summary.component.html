@@ -1,81 +1,149 @@
-<div class="order-summary-container">
-  <div *ngIf="(cartSummary$ | async) as summary" class="summary-content">
+<ng-container *ngIf="(cartSummary$ | async) as summary">
+
+  <!-- Botón compacto siempre visible -->
+  <div class="order-summary-container">
     <button type="button" class="summary-toggle" (click)="toggleSummary()" [attr.aria-expanded]="isExpanded">
       <span>Resumen</span>
-      <strong>{{ $any(summary).itemCount }}</strong>
+      <strong class="summary-badge">{{ $any(summary).itemCount }}</strong>
     </button>
-
-    <div *ngIf="isExpanded" class="summary-body">
-      <p class="current-service" *ngIf="selectedTable !== null">
-        Servicio actual: <strong>{{ selectedTable === 0 ? 'Barra (Mesa 0)' : ('Mesa ' + selectedTable) }}</strong>
-      </p>
-
-      <div class="service-mode">
-        <label for="paymentMethod">Método de cobro</label>
-        <select
-          id="paymentMethod"
-          [ngModel]="selectedPaymentMethod"
-          (ngModelChange)="onPaymentMethodChange($event, $any(summary).total)"
-          name="paymentMethod"
-        >
-          <option value="CASH">Efectivo</option>
-          <option value="CARD">Tarjeta</option>
-          <option value="OTHER">Otro</option>
-        </select>
-      </div>
-
-      <div *ngIf="selectedPaymentMethod === 'CASH'" class="service-mode">
-        <label for="cashReceivedAmount">Importe entregado</label>
-        <input
-          id="cashReceivedAmount"
-          type="number"
-          min="0"
-          step="0.01"
-          [ngModel]="cashReceivedAmount"
-          (ngModelChange)="cashReceivedAmount = $event"
-          name="cashReceivedAmount"
-          placeholder="Cantidad entregada por el cliente"
-        />
-        <small class="cash-hint" *ngIf="cashReceivedAmount > 0">
-          Cambio: {{ getCashChange($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
-        </small>
-      </div>
-
-      <div class="service-mode">
-        <label for="notes">Notas del ticket</label>
-        <textarea id="notes" rows="2" [value]="notes" (input)="notes = $any($event.target).value" placeholder="Opcional"></textarea>
-      </div>
-
-      <div class="summary-row">
-        <span>Items:</span>
-        <strong>{{ $any(summary).itemCount }}</strong>
-      </div>
-
-      <div class="summary-row">
-        <span>Subtotal:</span>
-        <strong>{{ $any(summary).subtotal | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
-      </div>
-
-      <div class="summary-row">
-        <span>IVA (21%):</span>
-        <strong>{{ $any(summary).totalVat | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
-      </div>
-
-      <div class="summary-row total">
-        <span>TOTAL:</span>
-        <strong>{{ $any(summary).total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</strong>
-      </div>
-
-      <button
-        (click)="processPayment()"
-        [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null || (selectedPaymentMethod === 'CASH' && cashReceivedAmount < $any(summary).total)"
-        class="btn-pay"
-      >
-        {{ isProcessing ? 'Procesando...' : 'Cobrar' }}
-      </button>
-
-      <p *ngIf="feedbackMessage" class="msg-ok">{{ feedbackMessage }}</p>
-      <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
-    </div>
+    <p *ngIf="feedbackMessage" class="msg-ok msg-inline">{{ feedbackMessage }}</p>
+    <p *ngIf="errorMessage" class="msg-error msg-inline">{{ errorMessage }}</p>
   </div>
-</div>
+
+  <!-- Modal de cobro -->
+  <div class="summary-backdrop" *ngIf="isExpanded" (click)="toggleSummary()">
+    <section class="summary-modal" (click)="$event.stopPropagation()">
+
+      <!-- Cabecera -->
+      <div class="summary-modal-header">
+        <div class="modal-title-block">
+          <div>
+            <h4>Procesar cobro</h4>
+            <small *ngIf="selectedTable !== null" class="modal-subtitle">
+              {{ selectedTable === 0 ? 'Barra — Mesa 0' : 'Mesa ' + selectedTable }}
+            </small>
+          </div>
+        </div>
+        <button type="button" class="summary-close-btn" (click)="toggleSummary()" aria-label="Cerrar">×</button>
+      </div>
+
+      <!-- Cuerpo en dos columnas -->
+      <div class="summary-modal-body">
+
+        <!-- COLUMNA IZQUIERDA: resumen visual -->
+        <div class="col-summary">
+          <p class="col-section-title">Resumen del pedido</p>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <span class="stat-label">Artículos</span>
+              <span class="stat-value">{{ $any(summary).itemCount }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Subtotal</span>
+              <span class="stat-value">{{ $any(summary).subtotal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">IVA (21%)</span>
+              <span class="stat-value">{{ $any(summary).totalVat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+            </div>
+            <div class="stat-card stat-card--tip" *ngIf="tipAmount > 0">
+              <span class="stat-label">Propina</span>
+              <span class="stat-value">+ {{ tipAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+            </div>
+          </div>
+
+          <div class="total-hero" [class.total-hero--tip]="tipAmount > 0">
+            <span class="total-hero-label">{{ tipAmount > 0 ? 'Total a cobrar' : 'Total' }}</span>
+            <span class="total-hero-amount">
+              {{ ($any(summary).total + (tipAmount > 0 ? tipAmount : 0)) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+            </span>
+          </div>
+
+          <div class="change-display" *ngIf="selectedPaymentMethod === 'CASH' && cashReceivedAmount > 0">
+            <span class="change-label">Cambio a devolver</span>
+            <span class="change-amount">{{ getCashChange($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: formulario -->
+        <div class="col-form">
+          <p class="col-section-title">Datos del cobro</p>
+
+          <!-- Método de pago: pills -->
+          <div class="field-group">
+            <label class="field-label">Método de pago</label>
+            <div class="payment-pills">
+              <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CASH'"
+                (click)="onPaymentMethodChange('CASH', $any(summary).total)">Efectivo</button>
+              <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CARD'"
+                (click)="onPaymentMethodChange('CARD', $any(summary).total)">Tarjeta</button>
+            </div>
+          </div>
+
+          <!-- Efectivo recibido -->
+          <div class="field-group" *ngIf="selectedPaymentMethod === 'CASH'">
+            <label class="field-label" for="cashReceivedAmount">Importe entregado</label>
+            <div class="input-prefix-wrap">
+              <span class="input-prefix">€</span>
+              <input
+                id="cashReceivedAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                [ngModel]="cashReceivedAmount"
+                (ngModelChange)="cashReceivedAmount = $event"
+                (change)="cashReceivedAmount = roundToCents(cashReceivedAmount)"
+                name="cashReceivedAmount"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <!-- Propina -->
+          <div class="field-group">
+            <label class="field-label" for="tipAmount">Propina <span class="field-opt">(opcional)</span></label>
+            <div class="input-prefix-wrap">
+              <span class="input-prefix">€</span>
+              <input
+                id="tipAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                [ngModel]="tipAmount"
+                (ngModelChange)="onTipAmountChange($event, $any(summary).total)"
+                name="tipAmount"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <div class="field-group">
+            <label class="field-label" for="notes">Notas <span class="field-opt">(opcional)</span></label>
+            <textarea id="notes" rows="3" [value]="notes"
+              (input)="notes = $any($event.target).value"
+              placeholder="Observaciones del ticket…"
+              class="field-textarea"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="summary-modal-footer">
+        <div class="footer-messages">
+          <p *ngIf="feedbackMessage" class="msg-ok">✔ {{ feedbackMessage }}</p>
+          <p *ngIf="errorMessage" class="msg-error">✖ {{ errorMessage }}</p>
+        </div>
+        <button
+          (click)="processPayment()"
+          [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null || (selectedPaymentMethod === 'CASH' && cashReceivedAmount < ($any(summary).total + tipAmount))"
+          class="btn-pay"
+        >
+          {{ isProcessing ? 'Procesando…' : 'Cobrar ' + (($any(summary).total + (tipAmount > 0 ? tipAmount : 0)) | currency:'EUR':'symbol':'1.2-2':'es-ES') }}
+        </button>
+      </div>
+    </section>
+  </div>
+
+</ng-container>

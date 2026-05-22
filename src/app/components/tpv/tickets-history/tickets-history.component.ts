@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { PaymentMethod, RefundRequest, TicketDetail, TicketSummary } from '../../../models/pos.model';
+import { PaymentMethod, RefundRequest, TicketDetail, TicketSummary, TipLeaderboardEntry } from '../../../models/pos.model';
 import { AuthService } from '../../../services/auth.service';
 import { PosOperationsService } from '../../../services/pos-operations.service';
 import { NavbarComponent } from '../../navbar/navbar.component';
@@ -272,6 +272,32 @@ export class TicketsHistoryComponent implements OnInit {
     return this.tickets.length > 0;
   }
 
+  get tipLeaderboard(): TipLeaderboardEntry[] {
+    const byEmployee = new Map<string, TipLeaderboardEntry>();
+
+    for (const ticket of this.tickets) {
+      const tipAmount = ticket.tipAmount ?? 0;
+      const username = this.getCollectorLabel(ticket.collectedBy);
+      if (tipAmount <= 0) {
+        continue;
+      }
+
+      const current = byEmployee.get(username) ?? {
+        username,
+        totalTips: 0,
+        ticketsWithTip: 0,
+      };
+
+      current.totalTips += tipAmount;
+      current.ticketsWithTip += 1;
+      byEmployee.set(username, current);
+    }
+
+    return Array.from(byEmployee.values())
+      .sort((a, b) => b.totalTips - a.totalTips)
+      .slice(0, 5);
+  }
+
   getPaymentMethodLabel(method: PaymentMethod): string {
     const labels: Record<PaymentMethod, string> = {
       CASH: 'Efectivo',
@@ -279,6 +305,13 @@ export class TicketsHistoryComponent implements OnInit {
       OTHER: 'Otro',
     };
     return labels[method] ?? method;
+  }
+
+  getCollectorLabel(value?: string | null): string {
+    if (!value || value.trim().length === 0) {
+      return 'No informado';
+    }
+    return value;
   }
 
   private getSelectedLine() {
@@ -315,6 +348,7 @@ export class TicketsHistoryComponent implements OnInit {
       sectionLine,
       this.buildReceiptTwoColumnLine('Ticket', `#${ticket.paymentId}`, 'Servicio', ticket.serviceLabel, width),
       this.buildReceiptTwoColumnLine('Fecha cobro', paidAtLabel, 'Metodo pago', this.getPaymentMethodLabel(ticket.paymentMethod), width),
+      this.buildReceiptTwoColumnLine('Cobrado por', this.getCollectorLabel(ticket.collectedBy), 'Propina', this.formatCurrency(ticket.tipAmount ?? 0), width),
       this.buildReceiptTwoColumnLine('Importe total', this.formatCurrency(ticket.totalAmount), 'Devuelto', this.formatCurrency(ticket.refundedAmount), width),
       this.buildReceiptTwoColumnLine('Pendiente devolucion', this.formatCurrency(ticket.refundableAmount), 'Notas', ticket.notes ?? '-', width),
       sectionLine,
