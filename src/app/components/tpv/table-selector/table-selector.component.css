@@ -40,6 +40,20 @@
   font-size: 24px;
 }
 
+.shift-message {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.shift-message-open {
+  color: var(--success-color);
+}
+
+.shift-message-closed {
+  color: var(--warning-color);
+}
+
 .btn-refresh {
   margin: 0;
   min-height: 40px;
@@ -91,8 +105,18 @@
   cursor: not-allowed;
 }
 
+.table-card-shift-closed {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .table-card-locked:hover {
   transform: none;
+}
+
+.table-card-shift-closed:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .table-number {

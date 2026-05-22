@@ -81,6 +81,11 @@ export class PosOperationsService {
     return this.http.post<CashRegisterShift>(`${this.apiUrl}/shifts/open`, request);
   }
 
+  /** Devuelve el turno de caja abierto actualmente (o null si no hay turno activo). */
+  getCurrentShift(): Observable<CashRegisterShift | null> {
+    return this.http.get<CashRegisterShift | null>(`${this.apiUrl}/shifts/current`);
+  }
+
   /** Cierra turno de caja y consolida totales. */
   closeShift(request: CloseShiftRequest): Observable<CashRegisterShift> {
     return this.http.post<CashRegisterShift>(`${this.apiUrl}/shifts/close`, request);

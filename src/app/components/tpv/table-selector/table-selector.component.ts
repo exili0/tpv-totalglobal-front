@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { SaleOrder } from '../../../models/pos.model';
 import { BusinessTable } from '../../../models/pos.model';
+import { CashRegisterShift } from '../../../models/pos.model';
 import { TableService } from '../../../services/table.service';
 import { CartService } from '../../../services/cart.service';
 import { AuthService } from '../../../services/auth.service';
@@ -23,6 +24,7 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage: string | null = null;
   pendingOrderTableNumbers = new Set<number>();
+  currentShift: CashRegisterShift | null = null;
 
   private refreshSubscription?: Subscription;
   private currentUsername: string | null = null;
@@ -56,14 +58,20 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
     forkJoin({
       tables: this.tableService.getActiveTables(),
       openOrders: this.posOperationsService.getOpenOrders(),
+      shift: this.posOperationsService.getCurrentShift(),
     })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: ({ tables, openOrders }) => {
+        next: ({ tables, openOrders, shift }) => {
           this.tables = [...tables].sort((a, b) => a.tableNumber - b.tableNumber);
+          this.currentShift = shift;
           // El estado OCCUPIED del backend no siempre basta:
           // si hay orden abierta con líneas, también tratamos la mesa como ocupada.
           this.pendingOrderTableNumbers = this.buildPendingOrderTableSet(openOrders);
+
+          if (!this.isCashShiftOpen()) {
+            this.errorMessage = 'La caja está cerrada. Debes abrir turno para acceder a mesas y pedidos.';
+          }
         },
         error: () => {
           this.errorMessage = 'No se pudieron cargar las mesas';
@@ -72,6 +80,11 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
   }
 
   openTable(table: BusinessTable): void {
+    if (!this.isCashShiftOpen()) {
+      this.errorMessage = 'La caja está cerrada. Abre turno antes de tomar una mesa.';
+      return;
+    }
+
     if (this.isTableLockedByOther(table)) {
       this.errorMessage = this.getBlockedTableMessage(table);
       return;
@@ -136,6 +149,11 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
     if (this.hasPendingOrder(table)) return 'Ocupada';
     if (table.status === 'OCCUPIED') return 'Ocupada';
     return 'Libre';
+  }
+
+  isCashShiftOpen(): boolean { 
+    // Si el turno de caja no está abierto, no se puede operar con mesas ni pedidos
+    return this.currentShift?.status === 'OPEN';
   }
 
   private getBlockedTableMessage(table: BusinessTable): string {

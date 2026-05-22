@@ -7,6 +7,14 @@
       <button type="button" class="btn-refresh" (click)="loadTables()" [disabled]="isLoading">Actualizar</button>
     </header>
 
+    <p *ngIf="!isLoading && isCashShiftOpen()" class="shift-message shift-message-open">
+      Caja abierta por {{ currentShift?.openedBy || 'usuario no informado' }}
+    </p>
+
+    <p *ngIf="!isLoading && !isCashShiftOpen()" class="shift-message shift-message-closed">
+      Caja cerrada. Abre un turno para operar mesas y pedidos.
+    </p>
+
     <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
     <section *ngIf="!isLoading" class="tables-grid">
@@ -16,7 +24,8 @@
         [class.table-card-occupied]="isTableOccupied(table)"
         [class.table-card-inactive]="table.status === 'INACTIVE'"
         [class.table-card-locked]="isTableLockedByOther(table)"
-        [disabled]="isTableLockedByOther(table)"
+        [class.table-card-shift-closed]="!isCashShiftOpen()"
+        [disabled]="isTableLockedByOther(table) || !isCashShiftOpen()"
         *ngFor="let table of tables"
         (click)="openTable(table)"
       >

@@ -1,6 +1,16 @@
 <section class="shift-panel">
   <h3>Turno de caja</h3>
 
+  <div class="shift-state" [class.shift-state-open]="isShiftOpen" [class.shift-state-closed]="!isShiftOpen">
+    <p><strong>Estado:</strong> {{ isShiftOpen ? 'Abierto' : 'Cerrado' }}</p>
+    <p *ngIf="isShiftOpen"><strong>Abierto por:</strong> {{ openedByLabel }}</p>
+    <p *ngIf="isShiftOpen"><strong>Hora apertura:</strong> {{ openedAtLabel }}</p>
+  </div>
+
+  <p *ngIf="isShiftOpen && pendingServices.length > 0" class="msg-warning">
+    No puedes cerrar caja hasta cobrar: {{ pendingServices.join(', ') }}
+  </p>
+
   <div class="field-group">
     <label for="openingFloat">Fondo inicial</label>
     <input
@@ -9,15 +19,16 @@
       min="0"
       step="0.01"
       [(ngModel)]="openingFloat"
-      [disabled]="isLoading"
+      [disabled]="isLoading || isShiftOpen"
     >
   </div>
 
   <div class="actions-row">
-    <button type="button" class="btn-open" (click)="openShift()" [disabled]="isLoading">Abrir turno</button>
-    <button type="button" class="btn-close" (click)="closeShift()" [disabled]="isLoading">Cerrar turno</button>
+    <button type="button" class="btn-open" (click)="openShift()" [disabled]="isLoading || isRefreshing || isShiftOpen">Abrir turno</button>
+    <button type="button" class="btn-close" (click)="closeShift()" [disabled]="isLoading || isRefreshing || !isShiftOpen || pendingServices.length > 0">Cerrar turno</button>
   </div>
 
+  <p *ngIf="isRefreshing" class="msg-muted">Actualizando estado...</p>
   <p *ngIf="successMessage" class="msg-ok">{{ successMessage }}</p>
   <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
 </section>
