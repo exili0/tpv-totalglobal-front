@@ -84,7 +84,7 @@
           <!-- Efectivo recibido -->
           <div class="field-group" *ngIf="selectedPaymentMethod === 'CASH'">
             <label class="field-label" for="cashReceivedAmount">Importe entregado</label>
-            <div class="input-prefix-wrap">
+            <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'cash'" (click)="setActiveAmountField('cash')">
               <span class="input-prefix">€</span>
               <input
                 id="cashReceivedAmount"
@@ -103,7 +103,7 @@
           <!-- Propina -->
           <div class="field-group">
             <label class="field-label" for="tipAmount">Propina <span class="field-opt">(opcional)</span></label>
-            <div class="input-prefix-wrap">
+            <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'tip'" (click)="setActiveAmountField('tip')">
               <span class="input-prefix">€</span>
               <input
                 id="tipAmount"
@@ -115,6 +115,56 @@
                 name="tipAmount"
                 placeholder="0.00"
               />
+            </div>
+          </div>
+          <!-- Keypad de cobro -->
+          <div class="field-group">
+            <label class="field-label">Keypad de cobro</label>
+
+            <div class="keypad-targets">
+              <button
+                type="button"
+                class="target-btn"
+                [class.target-btn--active]="activeAmountField === 'cash'"
+                [disabled]="selectedPaymentMethod !== 'CASH'"
+                (click)="setActiveAmountField('cash')"
+              >
+                Entregado
+              </button>
+              <button
+                type="button"
+                class="target-btn"
+                [class.target-btn--active]="activeAmountField === 'tip'"
+                (click)="setActiveAmountField('tip')"
+              >
+                Propina
+              </button>
+            </div>
+
+            <div class="quick-amounts" *ngIf="selectedPaymentMethod === 'CASH'">
+              <button type="button" (click)="setQuickCashAmount($any(summary).total, 0)">Exacto</button>
+              <button type="button" (click)="setQuickCashAmount($any(summary).total, 5)">+5€</button>
+              <button type="button" (click)="setQuickCashAmount($any(summary).total, 10)">+10€</button>
+              <button type="button" (click)="setQuickCashAmount($any(summary).total, 20)">+20€</button>
+            </div>
+
+            <div class="pay-keypad">
+              <button type="button" (click)="onTouchKeyPress('7', $any(summary).total)">7</button>
+              <button type="button" (click)="onTouchKeyPress('8', $any(summary).total)">8</button>
+              <button type="button" (click)="onTouchKeyPress('9', $any(summary).total)">9</button>
+              <button type="button" class="key-action" (click)="onTouchKeyPress('⌫', $any(summary).total)">⌫</button>
+
+              <button type="button" (click)="onTouchKeyPress('4', $any(summary).total)">4</button>
+              <button type="button" (click)="onTouchKeyPress('5', $any(summary).total)">5</button>
+              <button type="button" (click)="onTouchKeyPress('6', $any(summary).total)">6</button>
+              <button type="button" class="key-action" (click)="onTouchKeyPress('C', $any(summary).total)">C</button>
+
+              <button type="button" (click)="onTouchKeyPress('1', $any(summary).total)">1</button>
+              <button type="button" (click)="onTouchKeyPress('2', $any(summary).total)">2</button>
+              <button type="button" (click)="onTouchKeyPress('3', $any(summary).total)">3</button>
+              <button type="button" (click)="onTouchKeyPress('00', $any(summary).total)">00</button>
+
+              <button type="button" class="key-zero" (click)="onTouchKeyPress('0', $any(summary).total)">0</button>
             </div>
           </div>
 

@@ -62,10 +62,12 @@ export class ProductGridComponent implements OnInit {
 
     if (mode === 'subtract') {
       this.cartService.subtractFromCart(product, quantity);
+      this.quantitySelectorService.applySelectionAndReset(); // Reseteamos cantidad a 1 y modo a 'add' tras aplicar selección
       return;
     }
 
     this.cartService.addToCart(product, quantity);
+    this.quantitySelectorService.applySelectionAndReset();
   }
 
   toggleDetails(productId: number, event: MouseEvent): void {

@@ -39,8 +39,6 @@
         </span>
       </div>
 
-      <app-quantity-keypad></app-quantity-keypad>
-
       <div *ngIf="selectedCategory === null" class="welcome">
         <h1>Selecciona una Categoría</h1>
         <p>Elige una categoría para ver los productos disponibles</p>
@@ -57,6 +55,42 @@
 
     <div class="cart-section">
       <app-cart></app-cart>
+      <div class="payment-tools" [class.payment-tools--open]="isKeypadPanelOpen">
+        <div class="compact-qty-strip">
+          <input
+            class="compact-qty-input"
+            [value]="selectedQuantity"
+            readonly
+            aria-label="Cantidad seleccionada"
+          />
+
+          <div class="compact-qty-actions" *ngIf="!isKeypadPanelOpen">
+            <button type="button" class="qty-step" (click)="decreaseQuantity()" aria-label="Reducir cantidad">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f" aria-hidden="true"><path d="M200-440v-80h560v80H200Z"/></svg>
+            </button>
+            <button type="button" class="qty-step" (click)="increaseQuantity()" aria-label="Aumentar cantidad">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f" aria-hidden="true"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="payment-tools-toggle"
+            (click)="toggleKeypadPanel()"
+            [attr.aria-expanded]="isKeypadPanelOpen"
+            aria-controls="tpv-keypad-panel"
+            aria-label="Mostrar u ocultar teclado numérico"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" aria-hidden="true">
+              <path d="M320-240h60v-80h80v-60h-80v-80h-60v80h-80v60h80v80Zm200-30h200v-60H520v60Zm0-100h200v-60H520v60Zm44-152 56-56 56 56 42-42-56-58 56-56-42-42-56 56-56-56-42 42 56 56-56 58 42 42Zm-314-70h200v-60H250v60Zm-50 472q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div id="tpv-keypad-panel" class="payment-tools-content" *ngIf="isKeypadPanelOpen">
+          <app-quantity-keypad [showHeader]="false"></app-quantity-keypad>
+        </div>
+      </div>
       <app-order-summary></app-order-summary>
     </div>
   </div>

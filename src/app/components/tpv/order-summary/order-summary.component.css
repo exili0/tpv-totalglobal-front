@@ -59,7 +59,7 @@
 
 /*ModalW*/
 .summary-modal {
-  width: min(820px, 100%);
+  width: min(1080px, 100%);
   max-height: calc(100dvh - 40px);
   display: flex;
   flex-direction: column;
@@ -312,6 +312,11 @@
   background: var(--white);
 }
 
+.input-prefix-wrap--active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
 .input-prefix {
   display: grid;
   place-items: center;
@@ -346,6 +351,77 @@
   resize: vertical;
   box-sizing: border-box;
   font-family: inherit;
+}
+
+/* Detalles del pedido */
+
+.keypad-targets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.target-btn {
+  min-height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.target-btn--active {
+  border-color: var(--primary-color);
+  background: var(--primary-soft);
+  color: var(--primary-color);
+}
+
+.target-btn:disabled {
+  opacity: 0.55;
+}
+
+/* Teclado numérico para pago */
+.quick-amounts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.quick-amounts button {
+  min-height: 34px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-light);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.pay-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pay-keypad button {
+  min-height: 48px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--text-dark);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.pay-keypad button:active {
+  transform: translateY(1px);
+}
+
+.pay-keypad .key-action {
+  background: var(--secondary-soft);
+}
+
+.pay-keypad .key-zero {
+  grid-column: span 4;
 }
 
 /* Footer */
@@ -425,5 +501,9 @@
   .summary-modal-footer {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .quick-amounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

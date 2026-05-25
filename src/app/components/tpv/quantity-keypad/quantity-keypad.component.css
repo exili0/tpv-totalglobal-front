@@ -1,9 +1,9 @@
 .keypad-panel {
   background-color: var(--sidebar-bg);
-  border: var(--border-primary);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  box-shadow: var(--shadow-lg);
-  padding: 14px;
+  box-shadow: var(--shadow);
+  padding: 12px;
   display: grid;
   gap: 10px;
 }
@@ -17,7 +17,7 @@
 }
 
 .keypad-header strong {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--primary-color);
 }
 
@@ -30,7 +30,7 @@
 .keypad-actions button,
 .digits-grid button {
   margin: 0;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0;
   border-radius: 8px;
   background-color: var(--white);
@@ -46,8 +46,12 @@
 
 .digits-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+
+.digits-grid button:last-child {
+  grid-column: span 3;
 }
 
 .digits-grid button.pressed {

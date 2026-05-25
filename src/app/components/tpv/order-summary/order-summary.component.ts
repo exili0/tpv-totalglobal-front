@@ -22,6 +22,7 @@ export class OrderSummaryComponent implements OnInit {
   selectedPaymentMethod: PaymentMethod = 'CASH';
   cashReceivedAmount = 0;
   tipAmount = 0;
+  activeAmountField: 'cash' | 'tip' = 'cash';
   notes = '';
   isExpanded = false;
   isProcessing = false;
@@ -56,10 +57,66 @@ export class OrderSummaryComponent implements OnInit {
     // En tarjeta u otros métodos no necesitamos cambio, así que normalizamos el campo al total.
     if (method === 'CASH') {
       this.cashReceivedAmount = this.getGrandTotal(total);
+      this.activeAmountField = 'cash';
       return;
     }
 
     this.cashReceivedAmount = this.getGrandTotal(total);
+    this.activeAmountField = 'tip';
+  }
+
+  /** Define qué campo numérico controla el keypad táctil del modal de cobro. */
+  setActiveAmountField(field: 'cash' | 'tip'): void {
+    if (field === 'cash' && this.selectedPaymentMethod !== 'CASH') {
+      return;
+    }
+    this.activeAmountField = field;
+  }
+
+  /** Atajos rápidos para efectivo entregado (importe exacto y saltos habituales de caja). */
+  setQuickCashAmount(total: number, increment: number): void {
+    if (this.selectedPaymentMethod !== 'CASH') {
+      return;
+    }
+
+    this.activeAmountField = 'cash';
+    const next = Math.max(0, this.getGrandTotal(total) + increment);
+    this.cashReceivedAmount = this.roundToCents(next);
+  }
+
+  /**
+   * Keypad numérico táctil del modal de cobro.
+   * Opera en céntimos para evitar errores de coma flotante al escribir importes.
+   */
+  onTouchKeyPress(key: string, total: number): void {
+    const targetField = this.activeAmountField === 'cash' && this.selectedPaymentMethod !== 'CASH'
+      ? 'tip'
+      : this.activeAmountField;
+
+    const current = targetField === 'cash' ? this.cashReceivedAmount : this.tipAmount;
+    let cents = this.toCents(current);
+
+    if (key === 'C') {
+      cents = 0;
+    } else if (key === '⌫') {
+      cents = Math.trunc(cents / 10);
+    } else {
+      const digits = key === '00' ? [0, 0] : [Number(key)];
+      for (const digit of digits) {
+        if (!Number.isInteger(digit) || digit < 0 || digit > 9) {
+          continue;
+        }
+        cents = Math.min(9_999_999, cents * 10 + digit);
+      }
+    }
+
+    const value = this.fromCents(cents);
+    if (targetField === 'cash') {
+      this.cashReceivedAmount = value;
+      return;
+    }
+
+    this.onTipAmountChange(value, total);
   }
 
   getCashChange(total: number): number {
@@ -214,5 +271,13 @@ export class OrderSummaryComponent implements OnInit {
   /** Suma la propina al total base para obtener el importe total a cobrar. */
   private getGrandTotal(baseTotal: number): number {
     return baseTotal + this.getTipAmountSafe();
+  }
+
+  private toCents(amount: number): number {
+    return Math.max(0, Math.trunc(this.roundToCents(amount) * 100));
+  }
+
+  private fromCents(cents: number): number {
+    return this.roundToCents(cents / 100);
   }
 }

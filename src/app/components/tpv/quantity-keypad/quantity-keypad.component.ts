@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuantityMode, QuantitySelectorService } from '../../../services/quantity-selector.service';
 
@@ -9,7 +9,8 @@ import { QuantityMode, QuantitySelectorService } from '../../../services/quantit
   templateUrl: './quantity-keypad.component.html',
   styleUrl: './quantity-keypad.component.css',
 })
-export class QuantityKeypadComponent implements OnInit {
+export class QuantityKeypadComponent implements OnInit {  
+  @Input() showHeader = true;
   quantity = 1;
   mode: QuantityMode = 'add';
   readonly digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];

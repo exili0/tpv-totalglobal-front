@@ -1,5 +1,5 @@
 <section class="keypad-panel">
-  <div class="keypad-header">
+  <div class="keypad-header" *ngIf="showHeader">
     <span>Cantidad</span>
     <strong>{{ mode === 'subtract' ? '-' : '' }}{{ quantity }}</strong>
   </div>

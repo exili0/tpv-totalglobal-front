@@ -1,33 +1,35 @@
 <div class="cart-container">
   <h2>Carrito de Compra</h2>
-  
-  <div *ngIf="(cartItems$ | async) as items" class="cart-content">
-    <div *ngIf="$any(items).length === 0" class="empty-cart">
-      <p>Carrito vacío</p>
-    </div>
+  <!-- Lista de productos en el carrito -->
+  <div *ngIf="(cartItems$ | async) as items" class="cart-shell">
+    <div class="cart-content">
+      <div *ngIf="$any(items).length === 0" class="empty-cart">
+        <p>Carrito vacío</p>
+      </div>
 
-    <div *ngIf="$any(items).length > 0" class="items-list">
-      <div *ngFor="let item of $any(items)" class="cart-item">
-        <div class="item-info">
-          <h4>{{item.productName}}</h4>
-          <p>{{item.unitPrice | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
-        </div>
+      <div *ngIf="$any(items).length > 0" class="items-list">
+        <div *ngFor="let item of $any(items)" class="cart-item">
+          <div class="item-info">
+            <h4>{{item.productName}}</h4>
+            <p>{{item.unitPrice | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
+          </div>
 
-        <div class="item-quantity">
-          <button (click)="updateQuantity(item.productId, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
-          <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.productId, item.quantity)" min="1">
-          <button (click)="updateQuantity(item.productId, item.quantity + 1)">+</button>
-        </div>
+          <div class="item-quantity">
+            <button (click)="updateQuantity(item.productId, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
+            <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.productId, item.quantity)" min="1">
+            <button (click)="updateQuantity(item.productId, item.quantity + 1)">+</button>
+          </div>
 
-        <div class="item-total">
-          <p>{{item.total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
-          <button (click)="removeItem(item.productId)" class="btn-remove">X</button>
+          <div class="item-total">
+            <p>{{item.total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
+            <button (click)="removeItem(item.productId)" class="btn-remove">X</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <button *ngIf="$any(cartItems$ | async)?.length! > 0" (click)="clearCart()" class="btn-clear">
-    Limpiar Carrito
-  </button>
+    <div class="cart-footer" *ngIf="$any(items).length > 0">
+      <button (click)="clearCart()" class="btn-clear">Limpiar Carrito</button>
+    </div>
+  </div>
 </div>

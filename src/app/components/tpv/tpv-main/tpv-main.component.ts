@@ -14,6 +14,7 @@ import { TableService } from '../../../services/table.service';
 import { AuthService } from '../../../services/auth.service';
 import { AccessibilityThemeService } from '../../../services/accessibility-theme.service';
 import { CategoryColorAccessibilityService } from '../../../services/category-color-accessibility.service';
+import { QuantitySelectorService } from '../../../services/quantity-selector.service';
 
 @Component({
   selector: 'app-tpv-main',
@@ -29,9 +30,14 @@ export class TpvMainComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   isCategoriesPanelOpen = false;
+  isKeypadPanelOpen = false; // Controla visibilidad del panel de selección de cantidad para mejorar experiencia táctil y evitar solapamientos con el carrito.
+  selectedQuantity = 1; // Cantidad por defecto apara añadir al crrito, controlada por el QuantityKeypadComponent a través del QuantitySelectorService.
 
   private currentUsername: string | null = null;
   private backendSyncSubscription?: Subscription;
+  private quantitySubscription?: Subscription; // Mantiene la cantidad seleccionada sincronizada entre el Keypad y esta vista para mostrarla en el botón de cantidad.
+  private selectionAppliedSubscription?: Subscription; // Escucha cuándo se ha aplicado una selección de cantidad para cerrar el panel y volver a modo compacto,
+  //  mejora la experiencia táctil sin necesidad de cerrar manualmente el panel cada vez
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -41,7 +47,8 @@ export class TpvMainComponent implements OnInit, OnDestroy {
     private readonly tableService: TableService,
     private readonly authService: AuthService,
     private readonly accessibilityThemeService: AccessibilityThemeService,
-    private readonly categoryColorAccessibilityService: CategoryColorAccessibilityService
+    private readonly categoryColorAccessibilityService: CategoryColorAccessibilityService,
+    private readonly quantitySelectorService: QuantitySelectorService
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +73,14 @@ export class TpvMainComponent implements OnInit, OnDestroy {
     }
 
     this.currentUsername = username;
+    this.quantitySubscription = this.quantitySelectorService.getQuantity().subscribe((quantity) => {
+      this.selectedQuantity = quantity;
+    });
+    this.selectionAppliedSubscription = this.quantitySelectorService.getSelectionApplied().subscribe(() => {
+      // Al seleccionar producto, volvemos a modo compacto para no invadir el carrito.
+      this.closeKeypadPanel();
+    });
+
     this.tableService.claimTable(tableNumber, username).subscribe({
       next: () => {
         this.selectedTableNumber = tableNumber;
@@ -85,6 +100,8 @@ export class TpvMainComponent implements OnInit, OnDestroy {
   // Construye un Set con los números de mesa que tienen órdenes abiertas con líneas.
   ngOnDestroy(): void {
     this.backendSyncSubscription?.unsubscribe();
+    this.quantitySubscription?.unsubscribe();
+    this.selectionAppliedSubscription?.unsubscribe();
     if (this.selectedTableNumber !== null && this.currentUsername) {
       // Soltamos la mesa al salir para evitar bloqueos "fantasma" de sesión.
       this.tableService.releaseTable(this.selectedTableNumber, this.currentUsername).subscribe({
@@ -131,6 +148,22 @@ export class TpvMainComponent implements OnInit, OnDestroy {
 
   closeCategoriesPanel(): void {
     this.isCategoriesPanelOpen = false;
+  }
+
+  toggleKeypadPanel(): void {
+    this.isKeypadPanelOpen = !this.isKeypadPanelOpen;
+  }
+
+  closeKeypadPanel(): void {
+    this.isKeypadPanelOpen = false;
+  }
+
+  increaseQuantity(): void {
+    this.quantitySelectorService.increment();
+  }
+
+  decreaseQuantity(): void {
+    this.quantitySelectorService.decrement();
   }
 
   /**
