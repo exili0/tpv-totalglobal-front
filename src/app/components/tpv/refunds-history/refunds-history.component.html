@@ -37,7 +37,7 @@
         <tr *ngFor="let ticket of tickets">
           <td>#{{ ticket.paymentId }}</td>
           <td>{{ ticket.serviceLabel }}</td>
-          <td>{{ ticket.paidAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ ticket.paidAt | date:'dd,MM,yyyy' }}</td>
           <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ ticket.refundedAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>

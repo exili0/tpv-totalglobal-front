@@ -333,7 +333,7 @@ export class TicketsHistoryComponent implements OnInit {
 
   private buildTicketFileContent(ticket: TicketDetail): string {
     const paidAtDate = new Date(ticket.paidAt);
-    const paidAtLabel = Number.isNaN(paidAtDate.getTime()) ? ticket.paidAt : paidAtDate.toLocaleString('es-ES');
+    const paidAtLabel = Number.isNaN(paidAtDate.getTime()) ? ticket.paidAt : this.formatDateAsDdMmYyyy(paidAtDate);
     const width = 86;
     const sectionLine = this.buildReceiptSeparator(width);
     const linesHeader = this.buildReceiptTableHeader();
@@ -392,6 +392,14 @@ export class TicketsHistoryComponent implements OnInit {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
+  }
+
+  /** Formatea fecha en salida fija dd,MM,yyyy para consistencia de negocio. */
+  private formatDateAsDdMmYyyy(value: Date): string {
+    const day = `${value.getDate()}`.padStart(2, '0');
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const year = value.getFullYear();
+    return `${day},${month},${year}`;
   }
 
   private buildReceiptSeparator(width: number): string {

@@ -115,7 +115,7 @@ export class ShiftControlComponent {
     if (!rawDate) {
       return '-';
     }
-    return new Date(rawDate).toLocaleString('es-ES');
+    return this.formatDateAsDdMmYyyy(rawDate);
   }
 
   private refreshOperationalState(): void {
@@ -161,6 +161,19 @@ export class ShiftControlComponent {
   private clearMessages(): void {
     this.successMessage = null;
     this.errorMessage = null;
+  }
+
+  /** Normaliza cualquier fecha de entrada al formato dd,MM,yyyy. */
+  private formatDateAsDdMmYyyy(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day},${month},${year}`;
   }
 
   /** Extrae el texto del error del backend o devuelve un mensaje de respaldo. */

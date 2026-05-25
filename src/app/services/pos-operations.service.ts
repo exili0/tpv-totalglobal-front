@@ -91,6 +91,25 @@ export class PosOperationsService {
     return this.http.post<CashRegisterShift>(`${this.apiUrl}/shifts/close`, request);
   }
 
+  /**
+   * Recupera historial de turnos de caja para auditoría de beneficios.
+   *
+   * - 'startDate' y 'endDate' son opcionales y se envían en formato ISO (`yyyy-MM-dd`).
+   * - Si no se envían filtros, backend devuelve el histórico completo.
+   */
+  getShiftHistory(startDate?: string, endDate?: string): Observable<CashRegisterShift[]> {
+    let params = new HttpParams();
+
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
+    return this.http.get<CashRegisterShift[]>(`${this.apiUrl}/shifts`, { params });
+  }
+
   /** Recupera reporte Z diario para auditoría de caja. */
   getDailyZReport(date?: string): Observable<DailyZReportResponse> {
     // Si no se manda fecha, backend devuelve el día actual.

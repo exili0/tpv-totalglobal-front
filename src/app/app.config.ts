@@ -1,4 +1,5 @@
 import { ApplicationConfig, DEFAULT_CURRENCY_CODE, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http'; 
 
@@ -16,6 +17,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     // Formato de fechas y números en español
     { provide: LOCALE_ID, useValue: 'es-ES' },
+    // Formato de fecha a europeo 
+    { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { dateFormat: 'dd,MM,yyyy' } },
     // Moneda por defecto para el pipe currency
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' }
   ]

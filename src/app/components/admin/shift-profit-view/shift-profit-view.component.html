@@ -1,0 +1,97 @@
+<app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
+
+<section class="profits-panel">
+  <div class="profits-header">
+    <div>
+      <h3>Ganancias por turno de caja</h3>
+      <p>Consulta apertura, cierre y beneficio por cada turno registrado.</p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadShifts()" [disabled]="isLoading">
+      Actualizar
+    </button>
+  </div>
+
+  <div class="filters-grid">
+    <label>
+      Desde
+      <input type="date" [(ngModel)]="startDate" />
+    </label>
+
+    <label>
+      Hasta
+      <input type="date" [(ngModel)]="endDate" />
+    </label>
+
+    <label class="inline-check">
+      <input type="checkbox" [(ngModel)]="showOpenShifts" (ngModelChange)="onFilterChange()" />
+      Incluir turnos abiertos
+    </label>
+
+    <button type="button" class="filter-button" (click)="loadShifts()" [disabled]="isLoading">
+      Aplicar filtro
+    </button>
+  </div>
+
+  <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+  <p *ngIf="infoMessage && !errorMessage" class="msg-info">{{ infoMessage }}</p>
+  <!--------------------------------------------->
+  <div *ngIf="!isLoading && filteredShifts.length > 0" class="summary-grid">
+    <article class="summary-card">
+      <span class="summary-label">Turnos mostrados</span>
+      <strong>{{ filteredShifts.length }}</strong>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label">Ventas totales</span>
+      <strong>{{ totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label">Beneficio total</span>
+      <strong>{{ totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label">Beneficio medio</span>
+      <strong>{{ averageProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong>
+    </article>
+  </div>
+
+  <div *ngIf="isLoading" class="state-box">Cargando turnos...</div>
+
+  <div *ngIf="!isLoading && filteredShifts.length > 0" class="table-wrap">
+    <table class="profits-table">
+      <thead>
+        <tr>
+          <th>Turno</th>
+          <th>Estado</th>
+          <th>Apertura</th>
+          <th>Cierre</th>
+          <th>Abierto por</th>
+          <th>Cerrado por</th>
+          <th>Fondo inicial</th>
+          <th>Ventas</th>
+          <th>Beneficio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let shift of filteredShifts">
+          <td>#{{ shift.id }}</td>
+          <td>
+            <span class="status-pill" [ngClass]="getShiftStatusClass(shift.status)">
+              {{ getShiftStatusLabel(shift.status) }}
+            </span>
+          </td>
+          <td>{{ shift.openedAt | date:'dd,MM,yyyy' }}</td>
+          <td>{{ shift.closedAt ? (shift.closedAt | date:'dd,MM,yyyy') : 'Aún abierto' }}</td>
+          <td>{{ shift.openedBy || 'No informado' }}</td>
+          <td>{{ shift.closedBy || 'No informado' }}</td>
+          <td>{{ shift.openingFloat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ shift.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td class="profit-cell">{{ shift.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

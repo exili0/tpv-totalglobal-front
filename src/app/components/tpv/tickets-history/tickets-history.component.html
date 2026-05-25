@@ -53,7 +53,7 @@
         <tr *ngFor="let ticket of tickets">
           <td>#{{ ticket.paymentId }}</td>
           <td>{{ ticket.serviceLabel }}</td>
-          <td>{{ ticket.paidAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ ticket.paidAt | date:'dd,MM,yyyy' }}</td>
           <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ ticket.totalItems }}</td>
           <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
@@ -125,7 +125,7 @@
       <div class="ticket-meta">
         <p><strong>Ticket:</strong> #{{ selectedTicket.paymentId }}</p>
         <p><strong>Servicio:</strong> {{ selectedTicket.serviceLabel }}</p>
-        <p><strong>Hora cobro:</strong> {{ selectedTicket.paidAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Fecha cobro:</strong> {{ selectedTicket.paidAt | date:'dd,MM,yyyy' }}</p>
         <p><strong>Cobrado por:</strong> {{ getCollectorLabel(selectedTicket.collectedBy) }}</p>
         <p><strong>Importe total:</strong> {{ selectedTicket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
         <p><strong>Propina:</strong> {{ (selectedTicket.tipAmount ?? 0) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>

@@ -119,7 +119,7 @@
         <ng-container matColumnDef="createdAt">
           <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
           <mat-cell *matCellDef="let element">
-            {{ element.createdAt | date:'short' }}
+            {{ element.createdAt | date:'dd,MM,yyyy' }}
           </mat-cell>
         </ng-container>
 

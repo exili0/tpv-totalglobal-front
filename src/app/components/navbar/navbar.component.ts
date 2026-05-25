@@ -89,6 +89,11 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/admin/users']);
   }
 
+  goToShiftProfits(): void {
+    this.closeMenu();
+    this.router.navigate(['/admin/shift-profits']);
+  }
+
   gotoRestorePassword(): void {
     this.router.navigate(['/restorePassword']);
   }
