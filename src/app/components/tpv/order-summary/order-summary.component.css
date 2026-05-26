@@ -80,6 +80,41 @@
   flex-shrink: 0;
 }
 
+.modal-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-light, #e0e0e0);
+  background: var(--surface-light);
+}
+
+.step-chip {
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.step-chip:disabled {
+  opacity: 0.5;
+}
+
+.step-chip--active {
+  border-color: var(--primary-color);
+  background: var(--primary-soft);
+  color: var(--primary-color);
+}
+
+.step-chip--done {
+  border-color: var(--success-color);
+  background: color-mix(in srgb, var(--success-color) 14%, var(--white) 86%);
+  color: var(--success-dark);
+}
+
 .modal-title-block {
   display: flex;
   align-items: center;
@@ -130,23 +165,13 @@
 .summary-modal-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  padding: 24px;
 }
 
-.col-summary,
-.col-form {
-  padding: 24px;
+.modal-slide {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow-y: auto;
-}
-
-.col-summary {
-  background: var(--light-bg, #f5f7fa);
-  border-right: 1px solid var(--border-light, #e0e0e0);
 }
 
 .col-section-title {
@@ -156,6 +181,71 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-light);
+}
+
+.ticket-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.ticket-item {
+  border: 1px solid var(--border-light, #e0e0e0);
+  border-radius: 10px;
+  background: var(--white);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ticket-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-item-main strong {
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.ticket-item-main small {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.ticket-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ticket-item-qty {
+  min-width: 36px;
+  min-height: 24px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+.empty-hint {
+  margin: 0;
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-light);
+  color: var(--text-light);
+  padding: 14px;
 }
 
 /* Tarjetas de estadísticas */
@@ -256,6 +346,35 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.split-row input {
+  width: 84px;
+  min-height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.split-label {
+  color: var(--text-light);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.split-amount {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .field-label {
@@ -361,6 +480,10 @@
   gap: 8px;
 }
 
+.keypad-targets--single {
+  grid-template-columns: 1fr;
+}
+
 .target-btn {
   min-height: 38px;
   border: 1px solid var(--border-color);
@@ -434,6 +557,21 @@
   gap: 12px;
 }
 
+.btn-step {
+  min-width: 120px;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-step:disabled {
+  opacity: 0.55;
+}
+
 .footer-messages {
   flex: 1;
   display: flex;
@@ -487,17 +625,33 @@
 
 /* Responsive: columna única en pantallas estrechas */
 @media (max-width: 600px) {
-  .summary-modal-body {
+  .summary-modal {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .summary-modal-header,
+  .summary-modal-body,
+  .summary-modal-footer,
+  .modal-steps {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .modal-steps {
     grid-template-columns: 1fr;
   }
-  .col-summary {
-    border-right: none;
-    border-bottom: 1px solid var(--border-light);
-  }
+
   .btn-pay {
     min-width: 0;
     width: 100%;
   }
+
+  .btn-step {
+    min-width: 0;
+    width: 100%;
+  }
+
   .summary-modal-footer {
     flex-direction: column;
     align-items: stretch;

@@ -19,7 +19,9 @@ import { CreateOrderRequest, PaymentMethod } from '../../../models/pos.model';
 export class OrderSummaryComponent implements OnInit {
   cartSummary$!: Observable<CartSummary>;
   selectedTable: number | null = null;
+  currentStep: 1 | 2 | 3 = 1; // 1: Resumen, 2: Método de pago, 3: Confirmación
   selectedPaymentMethod: PaymentMethod = 'CASH';
+  splitPeopleCount = 1; // !! Dividir cuenta (implelmentar!!)
   cashReceivedAmount = 0;
   tipAmount = 0;
   activeAmountField: 'cash' | 'tip' = 'cash';
@@ -50,6 +52,76 @@ export class OrderSummaryComponent implements OnInit {
 
   toggleSummary(): void {
     this.isExpanded = !this.isExpanded;
+    if (this.isExpanded) {
+      this.currentStep = 1;
+    }
+  }
+
+  goToStep(step: 1 | 2 | 3, total: number): void {
+    if (step > 1 && !this.canContinueFromCart()) {
+      return;
+    }
+
+    if (step > 2 && !this.canContinueFromPayment(total)) {
+      return;
+    }
+
+    this.currentStep = step;
+  }
+
+  goToNextStep(total: number): void {
+    if (this.currentStep === 1) {
+      this.goToStep(2, total);
+      return;
+    }
+
+    if (this.currentStep === 2) {
+      this.goToStep(3, total);
+    }
+  }
+
+  goToPreviousStep(): void {
+    if (this.currentStep === 3) {
+      this.currentStep = 2;
+      return;
+    }
+
+    if (this.currentStep === 2) {
+      this.currentStep = 1;
+    }
+  }
+
+  canContinueFromCart(): boolean {
+    return this.selectedTable !== null;
+  }
+
+  canContinueFromPayment(total: number): boolean {
+    if (this.selectedPaymentMethod !== 'CASH') {
+      return true;
+    }
+
+    return this.cashReceivedAmount >= this.getGrandTotal(total);
+  }
+
+  setSplitPeopleCount(value: number, total: number): void {
+    const safeValue = Number.isFinite(value) ? Math.trunc(value) : 1;
+    this.splitPeopleCount = Math.max(1, safeValue);
+
+    if (this.selectedPaymentMethod === 'CASH') {
+      this.cashReceivedAmount = Math.max(
+        this.cashReceivedAmount,
+        this.getGrandTotal(total)
+      );
+    }
+  }
+
+  getSplitAmount(total: number): number {
+    const people = Math.max(1, this.splitPeopleCount);
+    return this.roundToCents(this.getGrandTotal(total) / people);
+  }
+
+  getFinalTotal(total: number): number {
+    return this.getGrandTotal(total);
   }
 
   onPaymentMethodChange(method: PaymentMethod, total: number): void {
@@ -219,6 +291,8 @@ export class OrderSummaryComponent implements OnInit {
         .subscribe({
           next: () => {
             this.cartService.clearCart();
+            this.currentStep = 1;
+            this.splitPeopleCount = 1;
             this.notes = '';
             this.tipAmount = 0;
             this.cashReceivedAmount = 0;
