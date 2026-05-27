@@ -173,6 +173,25 @@
   flex-direction: column;
   gap: 16px;
 }
+  /* Ajuste de títulos en slide de pago para aprovechar mejor el espacio
+   */
+.modal-slide--payment .col-section-title {
+  margin-bottom: 0;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.payment-layout-main,
+.payment-layout-keypad {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .col-section-title {
   margin: 0 0 4px;
@@ -547,6 +566,12 @@
   grid-column: span 4;
 }
 
+@media (max-width: 980px) {
+  .payment-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Footer */
 .summary-modal-footer {
   flex-shrink: 0;
@@ -659,5 +684,9 @@
 
   .quick-amounts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pay-keypad button {
+    min-height: 44px;
   }
 }

@@ -1,6 +1,6 @@
 <ng-container *ngIf="(cartSummary$ | async) as summary">
 
-  <!-- Botón compacto siempre visible -->
+  <!-- Boton compacto siempre visible -->
   <div class="order-summary-container">
     <button type="button" class="summary-toggle" (click)="toggleSummary()" [attr.aria-expanded]="isExpanded">
       <span>Resumen</span>
@@ -20,11 +20,11 @@
           <div>
             <h4>Procesar cobro</h4>
             <small *ngIf="selectedTable !== null" class="modal-subtitle">
-              {{ selectedTable === 0 ? 'Barra — Mesa 0' : 'Mesa ' + selectedTable }}
+              {{ selectedTable === 0 ? 'Barra - Mesa 0' : 'Mesa ' + selectedTable }}
             </small>
           </div>
         </div>
-        <button type="button" class="summary-close-btn" (click)="toggleSummary()" aria-label="Cerrar">×</button>
+        <button type="button" class="summary-close-btn" (click)="toggleSummary()" aria-label="Cerrar">x</button>
       </div>
 
       <div class="modal-steps">
@@ -45,7 +45,7 @@
           [disabled]="!canContinueFromCart()"
           (click)="goToStep(2, $any(summary).total)"
         >
-          2. Pago y división
+          2. Pago y division
         </button>
         <button
           type="button"
@@ -81,7 +81,7 @@
 
           <div class="stat-grid">
             <div class="stat-card">
-              <span class="stat-label">Artículos</span>
+              <span class="stat-label">Articulos</span>
               <span class="stat-value">{{ $any(summary).itemCount }}</span>
             </div>
             <div class="stat-card">
@@ -103,104 +103,110 @@
             <span class="total-hero-amount">{{ getFinalTotal($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
           </div>
         </div>
+        <!--------------------------------------------------------------------->
+        <!-- MODAL DE PAGO -->
+        <div class="modal-slide modal-slide--payment" *ngIf="currentStep === 2">
+          <p class="col-section-title">Metodo de pago y division de cuenta</p>
 
-        <div class="modal-slide" *ngIf="currentStep === 2">
-          <p class="col-section-title">Método de pago y división de cuenta</p>
+          <div class="payment-layout">
+            <div class="payment-layout-main">
+              <div class="field-group">
+                <label class="field-label">Metodo de pago</label>
+                <div class="payment-pills">
+                  <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CASH'"
+                    (click)="onPaymentMethodChange('CASH', $any(summary).total)">Efectivo</button>
+                  <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CARD'"
+                    (click)="onPaymentMethodChange('CARD', $any(summary).total)">Tarjeta</button>
+                </div>
+              </div>
 
-          <div class="field-group">
-            <label class="field-label">Método de pago</label>
-            <div class="payment-pills">
-              <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CASH'"
-                (click)="onPaymentMethodChange('CASH', $any(summary).total)">Efectivo</button>
-              <button type="button" class="pill" [class.pill--active]="selectedPaymentMethod === 'CARD'"
-                (click)="onPaymentMethodChange('CARD', $any(summary).total)">Tarjeta</button>
-            </div>
-          </div>
+              <div class="field-group">
+                <label class="field-label" for="splitPeopleCount">Dividir cuenta entre</label>
+                <div class="split-row">
+                  <input
+                    id="splitPeopleCount"
+                    type="number"
+                    min="1"
+                    step="1"
+                    [ngModel]="splitPeopleCount"
+                    (ngModelChange)="setSplitPeopleCount($event, $any(summary).total)"
+                    name="splitPeopleCount"
+                  />
+                  <span class="split-label">personas</span>
+                </div>
+                <p class="split-amount">
+                  {{ getSplitAmount($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }} por persona
+                </p>
+              </div>
 
-          <div class="field-group">
-            <label class="field-label" for="splitPeopleCount">Dividir cuenta entre</label>
-            <div class="split-row">
-              <input
-                id="splitPeopleCount"
-                type="number"
-                min="1"
-                step="1"
-                [ngModel]="splitPeopleCount"
-                (ngModelChange)="setSplitPeopleCount($event, $any(summary).total)"
-                name="splitPeopleCount"
-              />
-              <span class="split-label">personas</span>
-            </div>
-            <p class="split-amount">
-              {{ getSplitAmount($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }} por persona
-            </p>
-          </div>
+              <div class="field-group" *ngIf="selectedPaymentMethod === 'CASH'">
+                <label class="field-label" for="cashReceivedAmount">Importe entregado</label>
+                <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'cash'" (click)="setActiveAmountField('cash')">
+                  <span class="input-prefix">EUR</span>
+                  <input
+                    id="cashReceivedAmount"
+                    type="text"
+                    inputmode="numeric"
+                    [value]="formatAmountForInput(cashReceivedAmount)"
+                    (keydown)="onAmountKeyDown($event, $any(summary).total, 'cash')"
+                    name="cashReceivedAmount"
+                    placeholder="0.00"
+                    readonly
+                  />
+                </div>
+              </div>
 
-          <div class="field-group" *ngIf="selectedPaymentMethod === 'CASH'">
-            <label class="field-label" for="cashReceivedAmount">Importe entregado</label>
-            <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'cash'" (click)="setActiveAmountField('cash')">
-              <span class="input-prefix">€</span>
-              <input
-                id="cashReceivedAmount"
-                type="number"
-                min="0"
-                step="0.01"
-                [ngModel]="cashReceivedAmount"
-                (ngModelChange)="cashReceivedAmount = $event"
-                (change)="cashReceivedAmount = roundToCents(cashReceivedAmount)"
-                name="cashReceivedAmount"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <div class="change-display" *ngIf="selectedPaymentMethod === 'CASH' && cashReceivedAmount > 0">
-            <span class="change-label">Cambio a devolver</span>
-            <span class="change-amount">{{ getCashChange($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">Keypad de cobro</label>
-
-            <div class="quick-amounts" *ngIf="selectedPaymentMethod === 'CASH'">
-              <button type="button" (click)="setQuickCashAmount($any(summary).total, 0)">Exacto</button>
-              <button type="button" (click)="setQuickCashAmount($any(summary).total, 5)">+5€</button>
-              <button type="button" (click)="setQuickCashAmount($any(summary).total, 10)">+10€</button>
-              <button type="button" (click)="setQuickCashAmount($any(summary).total, 20)">+20€</button>
+              <div class="change-display" *ngIf="selectedPaymentMethod === 'CASH' && cashReceivedAmount > 0">
+                <span class="change-label">Cambio a devolver</span>
+                <span class="change-amount">{{ getCashChange($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+              </div>
             </div>
 
-            <div class="pay-keypad" *ngIf="selectedPaymentMethod === 'CASH'; else cardInfo">
-              <button type="button" (click)="onTouchKeyPress('7', $any(summary).total)">7</button>
-              <button type="button" (click)="onTouchKeyPress('8', $any(summary).total)">8</button>
-              <button type="button" (click)="onTouchKeyPress('9', $any(summary).total)">9</button>
-              <button type="button" class="key-action" (click)="onTouchKeyPress('⌫', $any(summary).total)">⌫</button>
+            <div class="payment-layout-keypad">
+              <div class="field-group">
+                <label class="field-label">Keypad de cobro</label>
 
-              <button type="button" (click)="onTouchKeyPress('4', $any(summary).total)">4</button>
-              <button type="button" (click)="onTouchKeyPress('5', $any(summary).total)">5</button>
-              <button type="button" (click)="onTouchKeyPress('6', $any(summary).total)">6</button>
-              <button type="button" class="key-action" (click)="onTouchKeyPress('C', $any(summary).total)">C</button>
+                <div class="quick-amounts" *ngIf="selectedPaymentMethod === 'CASH'">
+                  <button type="button" (click)="setQuickCashAmount($any(summary).total, 0)">Exacto</button>
+                  <button type="button" (click)="setQuickCashAmount($any(summary).total, 5)">+5EUR</button>
+                  <button type="button" (click)="setQuickCashAmount($any(summary).total, 10)">+10EUR</button>
+                  <button type="button" (click)="setQuickCashAmount($any(summary).total, 20)">+20EUR</button>
+                </div>
 
-              <button type="button" (click)="onTouchKeyPress('1', $any(summary).total)">1</button>
-              <button type="button" (click)="onTouchKeyPress('2', $any(summary).total)">2</button>
-              <button type="button" (click)="onTouchKeyPress('3', $any(summary).total)">3</button>
-              <button type="button" (click)="onTouchKeyPress('00', $any(summary).total)">00</button>
+                <div class="pay-keypad" *ngIf="selectedPaymentMethod === 'CASH'; else cardInfo">
+                  <button type="button" (click)="onTouchKeyPress('7', $any(summary).total)">7</button>
+                  <button type="button" (click)="onTouchKeyPress('8', $any(summary).total)">8</button>
+                  <button type="button" (click)="onTouchKeyPress('9', $any(summary).total)">9</button>
+                  <button type="button" class="key-action" (click)="onTouchKeyPress('⌫', $any(summary).total)">⌫</button>
 
-              <button type="button" class="key-zero" (click)="onTouchKeyPress('0', $any(summary).total)">0</button>
+                  <button type="button" (click)="onTouchKeyPress('4', $any(summary).total)">4</button>
+                  <button type="button" (click)="onTouchKeyPress('5', $any(summary).total)">5</button>
+                  <button type="button" (click)="onTouchKeyPress('6', $any(summary).total)">6</button>
+                  <button type="button" class="key-action" (click)="onTouchKeyPress('C', $any(summary).total)">C</button>
+
+                  <button type="button" (click)="onTouchKeyPress('1', $any(summary).total)">1</button>
+                  <button type="button" (click)="onTouchKeyPress('2', $any(summary).total)">2</button>
+                  <button type="button" (click)="onTouchKeyPress('3', $any(summary).total)">3</button>
+                  <button type="button" (click)="onTouchKeyPress('00', $any(summary).total)">00</button>
+
+                  <button type="button" class="key-zero" (click)="onTouchKeyPress('0', $any(summary).total)">0</button>
+                </div>
+
+                <ng-template #cardInfo>
+                  <p class="empty-hint">Con tarjeta no necesitas introducir efectivo entregado.</p>
+                </ng-template>
+              </div>
             </div>
-
-            <ng-template #cardInfo>
-              <p class="empty-hint">Con tarjeta no necesitas introducir efectivo entregado.</p>
-            </ng-template>
           </div>
         </div>
-
+        <!--------------------------------------------------------------------->
         <div class="modal-slide" *ngIf="currentStep === 3">
           <p class="col-section-title">Notas y propina</p>
 
           <div class="field-group">
             <label class="field-label" for="tipAmount">Propina <span class="field-opt">(opcional)</span></label>
             <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'tip'" (click)="setActiveAmountField('tip')">
-              <span class="input-prefix">€</span>
+              <span class="input-prefix">EUR</span>
               <input
                 id="tipAmount"
                 type="number"
@@ -251,7 +257,7 @@
             <label class="field-label" for="notes">Notas <span class="field-opt">(opcional)</span></label>
             <textarea id="notes" rows="3" [value]="notes"
               (input)="notes = $any($event.target).value"
-              placeholder="Observaciones del ticket…"
+              placeholder="Observaciones del ticket..."
               class="field-textarea"></textarea>
           </div>
 
@@ -291,7 +297,7 @@
           [disabled]="$any(summary).total === 0 || isProcessing || selectedTable === null || (selectedPaymentMethod === 'CASH' && cashReceivedAmount < ($any(summary).total + tipAmount))"
           class="btn-pay"
         >
-          {{ isProcessing ? 'Procesando…' : 'Cobrar ' + (getFinalTotal($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES') }}
+          {{ isProcessing ? 'Procesando...' : 'Cobrar ' + (getFinalTotal($any(summary).total) | currency:'EUR':'symbol':'1.2-2':'es-ES') }}
         </button>
       </div>
     </section>

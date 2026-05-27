@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { finalize, first, switchMap } from 'rxjs/operators';
 import { CartService } from '../../../services/cart.service';
@@ -41,12 +42,6 @@ export class OrderSummaryComponent implements OnInit {
     this.cartSummary$ = this.cartService.getCartSummary();
     this.cartService.getActiveTableNumber().subscribe((tableNumber) => {
       this.selectedTable = tableNumber;
-    });
-    // Si el cobro es en efectivo, mantenemos el importe entregado alineado con el total del carrito.
-    this.cartSummary$.subscribe((summary) => {
-      if (this.selectedPaymentMethod === 'CASH') {
-        this.cashReceivedAmount = this.getGrandTotal(summary.total);
-      }
     });
   }
 
@@ -103,16 +98,9 @@ export class OrderSummaryComponent implements OnInit {
     return this.cashReceivedAmount >= this.getGrandTotal(total);
   }
 
-  setSplitPeopleCount(value: number, total: number): void {
+  setSplitPeopleCount(value: number, _total: number): void {
     const safeValue = Number.isFinite(value) ? Math.trunc(value) : 1;
     this.splitPeopleCount = Math.max(1, safeValue);
-
-    if (this.selectedPaymentMethod === 'CASH') {
-      this.cashReceivedAmount = Math.max(
-        this.cashReceivedAmount,
-        this.getGrandTotal(total)
-      );
-    }
   }
 
   getSplitAmount(total: number): number {
@@ -124,17 +112,66 @@ export class OrderSummaryComponent implements OnInit {
     return this.getGrandTotal(total);
   }
 
-  onPaymentMethodChange(method: PaymentMethod, total: number): void {
+  onPaymentMethodChange(method: PaymentMethod, _total: number): void {
     this.selectedPaymentMethod = method;
-    // En tarjeta u otros métodos no necesitamos cambio, así que normalizamos el campo al total.
     if (method === 'CASH') {
-      this.cashReceivedAmount = this.getGrandTotal(total);
       this.activeAmountField = 'cash';
       return;
     }
 
-    this.cashReceivedAmount = this.getGrandTotal(total);
     this.activeAmountField = 'tip';
+  }
+
+  /** Muestra importes con dos decimales para emular display de terminal de cobro. */
+  formatAmountForInput(amount: number): string {
+    return this.roundToCents(amount).toFixed(2).replace('.', ',');
+  }
+
+  /**
+   * Captura teclado físico/numpad y aplica el mismo flujo de céntimos que el keypad táctil
+   * Ejemplo: 9 -> 0,09; 0 -> 0,90; 5 -> 9,05.
+   */
+  onAmountKeyDown(event: KeyboardEvent, total: number, field: 'cash' | 'tip'): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    // Permitir navegación y confirmación con Tab, Shift+Tab y Enter.
+    const key = event.key;
+    if (key === 'Tab' || key === 'Shift' || key === 'Enter') {
+      return;
+    }
+    // Si el campo es efectivo, solo permitirlo si el método de pago es efectivo
+    if (field === 'cash' && this.selectedPaymentMethod !== 'CASH') {
+      return;
+    }
+
+    this.setActiveAmountField(field);
+    // Permitir solo números, Backspace, Delete, Escape y punto/coma 
+    // (que se ignoran pero no bloquean para permitir escribir decimales).
+    if (/^[0-9]$/.test(key)) {
+      event.preventDefault();
+      this.onTouchKeyPress(key, total);
+      return;
+    }
+
+    if (key === 'Backspace') {
+      event.preventDefault();
+      this.onTouchKeyPress('⌫', total);
+      return;
+    }
+
+    if (key === 'Delete' || key === 'Escape') {
+      event.preventDefault();
+      this.onTouchKeyPress('C', total);
+      return;
+    }
+
+    if (key === '.' || key === ',') {
+      event.preventDefault();
+      return;
+    }
+
+    event.preventDefault();
   }
 
   /** Define qué campo numérico controla el keypad táctil del modal de cobro. */
@@ -152,7 +189,9 @@ export class OrderSummaryComponent implements OnInit {
     }
 
     this.activeAmountField = 'cash';
-    const next = Math.max(0, this.getGrandTotal(total) + increment);
+    const next = increment === 0
+      ? this.getGrandTotal(total)
+      : this.cashReceivedAmount + increment;
     this.cashReceivedAmount = this.roundToCents(next);
   }
 
@@ -195,16 +234,11 @@ export class OrderSummaryComponent implements OnInit {
     return Math.max(0, this.cashReceivedAmount - this.getGrandTotal(total));
   }
 
-  onTipAmountChange(value: number | string, total: number): void {
+  onTipAmountChange(value: number | string, _total: number): void {
     // Sanea el valor: descarta no-numéricos y negativos, recorta a 2 decimales.
     const parsed = Number(value);
     const safeTip = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
     this.tipAmount = Number(safeTip.toFixed(2));
-
-    // Si el cobro es en efectivo, el importe entregado nunca puede bajar del nuevo total.
-    if (this.selectedPaymentMethod === 'CASH') {
-      this.cashReceivedAmount = Math.max(this.cashReceivedAmount, this.getGrandTotal(total));
-    }
   }
 
   /** Redondea el importe a 2 decimales al salir del campo (evita artefactos de punto flotante). */
@@ -319,8 +353,20 @@ export class OrderSummaryComponent implements OnInit {
         });
     });
   }
-
+  // Devolver msj de error informativo
+  // pruebas back!!! se debe quitar!!!!!!!!
   private getErrorMessage(error: unknown, fallback: string): string {
+    const backendText = this.extractBackendTextError(error);
+    if (backendText) {
+      return backendText;
+    }
+
+    if (error instanceof HttpErrorResponse && typeof error.message === 'string') {
+      if (error.message.includes('is not valid JSON') || error.message.includes('Unexpected token')) {
+        return 'El backend devolvio un error en texto plano (posible stock insuficiente en el momento del cobro). Hay que ajustar el backend para responder JSON en errores.';
+      }
+    }
+
     if (error && typeof error === 'object') {
       const raw = (error as { error?: unknown }).error;
       if (typeof raw === 'string' && raw.trim().length > 0) {
@@ -334,6 +380,38 @@ export class OrderSummaryComponent implements OnInit {
       }
     }
     return fallback;
+  }
+  // Extrae msjs de error en texto plano que el backend podría devolver en lugar de JSON ç
+  // (por ejemplo, en casos de error no controlados o excepciones).
+  private extractBackendTextError(error: unknown): string | null {
+    if (!(error instanceof HttpErrorResponse)) {
+      return null;
+    }
+
+    const raw = error.error;
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      return raw.trim();
+    }
+
+    if (raw && typeof raw === 'object') {
+      if ('text' in raw) {
+        const text = (raw as { text?: unknown }).text;
+        if (typeof text === 'string' && text.trim().length > 0) {
+          return text.trim();
+        }
+      }
+
+      if ('error' in raw) {
+        //nested significa que el backend podría estar envolviendo el error original 
+        // dentro de otra propiedad "error" 
+        const nested = (raw as { error?: unknown }).error;
+        if (typeof nested === 'string' && nested.trim().length > 0) {
+          return nested.trim();
+        }
+      }
+    }
+
+    return null;
   }
 
   /** Devuelve la propina como número finito >= 0 con 2 decimales, seguro para enviar al backend. */
@@ -350,7 +428,7 @@ export class OrderSummaryComponent implements OnInit {
   private toCents(amount: number): number {
     return Math.max(0, Math.trunc(this.roundToCents(amount) * 100));
   }
-
+  // Convertir a céntimos.
   private fromCents(cents: number): number {
     return this.roundToCents(cents / 100);
   }
