@@ -181,6 +181,23 @@ export interface CashRegisterShift {
   totalProfit: number;
   openedBy: string | null;
   closedBy: string | null;
+  closingStockSnapshot?: string | null;
+}
+
+/** Resumen de un producto vendido dentro de un turno de caja. */
+export interface ShiftProductSale {
+  productId: number;
+  productName: string;
+  quantitySold: number;
+  totalSales: number;
+  totalProfit: number;
+  stockAtClose: number | null;
+}
+
+/** Vista detallada de turno con productos vendidos y stock al cierre. */
+export interface ShiftDetail {
+  shift: CashRegisterShift;
+  soldProducts: ShiftProductSale[];
 }
 
 /** Resumen Z diario de ventas y rentabilidad. */

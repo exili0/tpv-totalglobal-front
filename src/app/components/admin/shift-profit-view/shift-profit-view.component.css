@@ -168,6 +168,21 @@
   color: var(--success-dark);
 }
 
+.details-button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--primary-color);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.details-button:hover {
+  background: color-mix(in srgb, var(--primary-color) 12%, #ffffff 88%);
+}
+
 @media (max-width: 980px) {
   .filters-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

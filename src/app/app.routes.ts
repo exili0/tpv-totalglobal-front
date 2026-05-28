@@ -13,6 +13,7 @@ import { AccessibilitySettingsComponent } from './components/accessibility-setti
 import { TicketsHistoryComponent } from './components/tpv/tickets-history/tickets-history.component';
 import { RefundsHistoryComponent } from './components/tpv/refunds-history/refunds-history.component';
 import { ShiftProfitViewComponent } from './components/admin/shift-profit-view/shift-profit-view.component';
+import { ShiftDetailViewComponent } from './components/admin/shift-detail-view/shift-detail-view.component';
 import { adminGuard, userGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -32,6 +33,7 @@ export const routes: Routes = [
   { path: 'admin/products', component: ProductManagementComponent, canActivate: [adminGuard] },
   { path: 'admin/users', component: UsersManagementComponent, canActivate: [adminGuard] },
   { path: 'admin/shift-profits', component: ShiftProfitViewComponent, canActivate: [adminGuard] },
+  { path: 'admin/shift-details/:id', component: ShiftDetailViewComponent, canActivate: [adminGuard] },
   
   // Vistas heresrdadas (mantener por compatibilidad)
   { path: 'admin-view', component: AdminViewComponent, canActivate: [adminGuard] },

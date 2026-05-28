@@ -12,6 +12,7 @@ import {
   Refund,
   RefundRequest,
   SaleOrder,
+  ShiftDetail,
   TicketDetail,
   TicketSummary
 } from '../models/pos.model';
@@ -108,6 +109,11 @@ export class PosOperationsService {
     }
 
     return this.http.get<CashRegisterShift[]>(`${this.apiUrl}/shifts`, { params });
+  }
+
+  /** Devuelve el detalle de un turno con productos vendidos y stock al cierre. */
+  getShiftDetail(shiftId: number): Observable<ShiftDetail> {
+    return this.http.get<ShiftDetail>(`${this.apiUrl}/shifts/${shiftId}/detail`);
   }
 
   /** Recupera reporte Z diario para auditoría de caja. */

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CashRegisterShift } from '../../../models/pos.model';
 import { PosOperationsService } from '../../../services/pos-operations.service';
@@ -31,7 +32,10 @@ export class ShiftProfitViewComponent implements OnInit {
     this.loadShifts();
   }
 
-  constructor(private readonly posOperationsService: PosOperationsService) {}
+  constructor(
+    private readonly posOperationsService: PosOperationsService,
+    private readonly router: Router
+  ) {}
 
   /**
    * Carga el histórico de turnos y resetea estados visuales de feedback
@@ -97,6 +101,10 @@ export class ShiftProfitViewComponent implements OnInit {
 
   getShiftStatusClass(status: CashRegisterShift['status']): string {
     return status === 'OPEN' ? 'status-open' : 'status-closed';
+  }
+
+  viewShiftDetails(shiftId: number): void {
+    this.router.navigate(['/admin/shift-details', shiftId]);
   }
 
   /** Normaliza fecha textual a epoch ms para ordenar sin errores de parseo. */

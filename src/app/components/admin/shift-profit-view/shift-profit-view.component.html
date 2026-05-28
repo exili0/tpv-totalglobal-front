@@ -66,13 +66,13 @@
         <tr>
           <th>Turno</th>
           <th>Estado</th>
-          <th>Apertura</th>
-          <th>Cierre</th>
+          <th>Apertura - cierre</th>
           <th>Abierto por</th>
           <th>Cerrado por</th>
           <th>Fondo inicial</th>
           <th>Ventas</th>
           <th>Beneficio</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -83,13 +83,20 @@
               {{ getShiftStatusLabel(shift.status) }}
             </span>
           </td>
-          <td>{{ shift.openedAt | date:'dd,MM,yyyy' }}</td>
-          <td>{{ shift.closedAt ? (shift.closedAt | date:'dd,MM,yyyy') : 'Aún abierto' }}</td>
+          <td>
+            {{ shift.openedAt | date:'yyyy-MM-dd HH:mm' }} -
+            {{ shift.closedAt ? (shift.closedAt | date:'yyyy-MM-dd HH:mm') : 'Aún abierto' }}
+          </td>
           <td>{{ shift.openedBy || 'No informado' }}</td>
           <td>{{ shift.closedBy || 'No informado' }}</td>
           <td>{{ shift.openingFloat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ shift.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td class="profit-cell">{{ shift.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>
+            <button type="button" class="details-button" (click)="viewShiftDetails(shift.id)">
+              Ver productos
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
