@@ -174,10 +174,10 @@
         <div *ngIf="modalMode === 'REFUND' && selectedTicket.refundableAmount > 0" class="refund-form">
           <label>Tipo de devolución</label>
           <div class="mode-grid">
-            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'FULL_TICKET'" (click)="setRefundMode('FULL_TICKET')">
+            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'FULL_TICKET'" (click)="setRefundMode('FULL_TICKET')" [disabled]="isRefunding">
               Completa (ticket)
             </button>
-            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'PARTIAL_TICKET'" (click)="setRefundMode('PARTIAL_TICKET')">
+            <button type="button" class="mode-btn" [class.mode-btn--active]="refundMode === 'PARTIAL_TICKET'" (click)="setRefundMode('PARTIAL_TICKET')" [disabled]="isRefunding">
               Parcial (importe)
             </button>
             <button
@@ -185,7 +185,7 @@
               class="mode-btn"
               [class.mode-btn--active]="refundMode === 'BY_PRODUCT'"
               (click)="setRefundMode('BY_PRODUCT')"
-              [disabled]="!canRefundByProduct"
+              [disabled]="!canRefundByProduct || isRefunding"
             >
               Parcial (producto)
             </button>
@@ -201,12 +201,13 @@
               [max]="selectedTicket.refundableAmount"
               [(ngModel)]="refundAmount"
               [readonly]="refundMode === 'FULL_TICKET'"
+              [disabled]="isRefunding"
             />
           </ng-container>
 
           <ng-container *ngIf="refundMode === 'BY_PRODUCT'">
             <label for="refundLine">Producto</label>
-            <select id="refundLine" [(ngModel)]="selectedLineId" (ngModelChange)="onSelectedLineChange()">
+            <select id="refundLine" [(ngModel)]="selectedLineId" (ngModelChange)="onSelectedLineChange()" [disabled]="isRefunding">
               <option [ngValue]="null" disabled>Selecciona producto</option>
               <option *ngFor="let line of selectedTicket.lines" [ngValue]="line.lineId" [disabled]="line.refundableQuantity <= 0">
                 {{ line.productName }} (pendiente: {{ line.refundableQuantity }})
@@ -221,16 +222,24 @@
               step="1"
               [max]="getSelectedLineMaxQuantity()"
               [(ngModel)]="selectedLineQuantity"
+              [disabled]="isRefunding"
             />
           </ng-container>
 
-          <label for="refundReason">Motivo (opcional)</label>
+          <label for="returnToStock">Destino del producto</label>
+          <select id="returnToStock" [(ngModel)]="refundReturnToStock" [disabled]="isRefunding">
+            <option [ngValue]="true">Retornar al stock</option>
+            <option [ngValue]="false">Registrar como desecho</option>
+          </select>
+
+          <label for="refundReason">Motivo {{ refundReturnToStock ? '(opcional)' : '(obligatorio)' }}</label>
           <input
             id="refundReason"
             type="text"
             maxlength="250"
             [(ngModel)]="refundReason"
             placeholder="Ejemplo: producto devuelto"
+            [disabled]="isRefunding"
           />
 
           <button

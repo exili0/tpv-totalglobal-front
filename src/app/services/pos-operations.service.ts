@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   CashRegisterShift,
@@ -25,6 +25,20 @@ export class PosOperationsService {
   private readonly apiUrl = 'http://localhost:8080/api/pos';
 
   constructor(private http: HttpClient) {}
+
+  private buildRefundHeaders(metadata?: { idempotencyKey?: string; clientAttemptAt?: string }): HttpHeaders | undefined {
+    let headers = new HttpHeaders();
+
+    if (metadata?.idempotencyKey) {
+      headers = headers.set('X-Idempotency-Key', metadata.idempotencyKey);
+    }
+
+    if (metadata?.clientAttemptAt) {
+      headers = headers.set('X-Client-Attempt-At', metadata.clientAttemptAt);
+    }
+
+    return headers.keys().length > 0 ? headers : undefined;
+  }
 
   /** Crea/actualiza el pedido abierto de una mesa o barra. */
   openOrUpdateOrder(request: CreateOrderRequest): Observable<SaleOrder> {
@@ -71,10 +85,11 @@ export class PosOperationsService {
   }
 
   /** Registra una devolución parcial o total de un ticket. */
-  registerRefund(request: RefundRequest): Observable<Refund> {
+  registerRefund(request: RefundRequest, metadata?: { idempotencyKey?: string; clientAttemptAt?: string }): Observable<Refund> {
     // El tipo de devolución (total/parcial/producto) lo resuelve backend
     // según los campos informados en request.
-    return this.http.post<Refund>(`${this.apiUrl}/refunds`, request);
+    const headers = this.buildRefundHeaders(metadata);
+    return this.http.post<Refund>(`${this.apiUrl}/refunds`, request, headers ? { headers } : undefined);
   }
 
   /** Abre turno de caja para comenzar operación diaria. */

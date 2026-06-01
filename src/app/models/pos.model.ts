@@ -144,6 +144,7 @@ export interface Refund {
   reason: string | null;
   refundedBy: string;
   refundedAt: string;
+  returnToStock?: boolean;
 }
 
 /** Solicitud para devolución parcial o total de un ticket. */
@@ -154,6 +155,7 @@ export interface RefundRequest {
   amount?: number;
   reason?: string;
   refundedBy: string;
+  returnToStock?: boolean; // Si es devolución de producto, indica si retorna a stock o se considera desecho 
 }
 
 /** Datos requeridos para abrir turno de caja. */

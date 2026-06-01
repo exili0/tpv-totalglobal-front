@@ -24,24 +24,28 @@
     <table class="refunds-table">
       <thead>
         <tr>
+          <th>Devolución</th>
           <th>Ticket</th>
-          <th>Servicio</th>
-          <th>Hora cobro</th>
-          <th>Total cobrado</th>
-          <th>Devuelto</th>
-          <th>Pendiente</th>
+          <th>Hora devolución</th>
+          <th>Usuario</th>
+          <th>Importe</th>
+          <th>Línea</th>
+          <th>Destino stock</th>
+          <th>Motivo</th>
           <th>Método</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let ticket of tickets">
-          <td>#{{ ticket.paymentId }}</td>
-          <td>{{ ticket.serviceLabel }}</td>
-          <td>{{ ticket.paidAt | date:'dd,MM,yyyy' }}</td>
-          <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-          <td>{{ ticket.refundedAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-          <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-          <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
+        <tr *ngFor="let refund of refunds">
+          <td>#{{ refund.id }}</td>
+          <td>#{{ refund.payment.id }}</td>
+          <td>{{ refund.refundedAt | date:'dd,MM,yyyy' }}</td>
+          <td>{{ refund.refundedBy }}</td>
+          <td>{{ refund.amount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ getLineTrace(refund) }}</td>
+          <td>{{ getStockDestinationLabel(refund.returnToStock) }}</td>
+          <td>{{ getReasonLabel(refund.reason) }}</td>
+          <td>{{ getPaymentMethodLabel(refund.payment.paymentMethod) }}</td>
         </tr>
       </tbody>
     </table>

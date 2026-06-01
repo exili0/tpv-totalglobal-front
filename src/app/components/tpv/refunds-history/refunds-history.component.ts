@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs';
-import { PaymentMethod, TicketSummary } from '../../../models/pos.model';
+import { PaymentMethod, Refund } from '../../../models/pos.model';
 import { PosOperationsService } from '../../../services/pos-operations.service';
 import { NavbarComponent } from '../../navbar/navbar.component';
 
@@ -18,7 +18,7 @@ import { NavbarComponent } from '../../navbar/navbar.component';
   styleUrl: './refunds-history.component.css',
 })
 export class RefundsHistoryComponent implements OnInit {
-  tickets: TicketSummary[] = [];
+  refunds: Refund[] = [];
   isLoading = false;
   errorMessage: string | null = null;
 
@@ -28,17 +28,21 @@ export class RefundsHistoryComponent implements OnInit {
     this.loadRefunds();
   }
 
-  /** Obtiene todos los tickets y filtra los que tengan importe devuelto mayor a cero. */
+  /** Obtiene devoluciones registradas y las ordena por fecha descendente. */
   loadRefunds(): void {
     this.errorMessage = null;
     this.isLoading = true;
 
     this.posOperationsService
-      .getTickets()
+      .getRefunds()
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: (tickets) => {
-          this.tickets = tickets.filter((ticket) => ticket.refundedAmount > 0);
+        next: (refunds) => {
+          this.refunds = [...refunds].sort((a, b) => {
+            const aDate = new Date(a.refundedAt).getTime();
+            const bDate = new Date(b.refundedAt).getTime();
+            return bDate - aDate;
+          });
         },
         error: (error: unknown) => {
           this.errorMessage = this.getErrorMessage(error, 'No se pudieron cargar las devoluciones');
@@ -47,7 +51,7 @@ export class RefundsHistoryComponent implements OnInit {
   }
 
   get hasRefunds(): boolean {
-    return this.tickets.length > 0;
+    return this.refunds.length > 0;
   }
 
   /** Convierte el código interno del método de pago en texto legible para el usuario. */
@@ -58,6 +62,26 @@ export class RefundsHistoryComponent implements OnInit {
       OTHER: 'Otro',
     };
     return labels[method] ?? method;
+  }
+
+  getLineTrace(refund: Refund): string {
+    if (!refund.saleOrderLine) {
+      return 'Ticket completo o por importe';
+    }
+
+    const qty = refund.refundedQuantity ?? 0;
+    return `${refund.saleOrderLine.productName} (x${qty})`;
+  }
+
+  getReasonLabel(reason: string | null): string {
+    if (!reason || reason.trim().length === 0) {
+      return 'Sin motivo informado';
+    }
+    return reason;
+  }
+
+  getStockDestinationLabel(returnToStock?: boolean): string {
+    return returnToStock === false ? 'Desecho' : 'Retorna stock';
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {

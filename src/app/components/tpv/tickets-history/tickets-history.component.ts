@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { PaymentMethod, RefundRequest, TicketDetail, TicketSummary, TipLeaderboardEntry } from '../../../models/pos.model';
 import { AuthService } from '../../../services/auth.service';
 import { PosOperationsService } from '../../../services/pos-operations.service';
@@ -9,6 +9,13 @@ import { NavbarComponent } from '../../navbar/navbar.component';
 
 type RefundMode = 'FULL_TICKET' | 'PARTIAL_TICKET' | 'BY_PRODUCT';
 type TicketModalMode = 'VIEW' | 'REFUND';
+
+interface RefundValidationPayload {
+  mode: RefundMode;
+  amount?: number;
+  saleOrderLineId?: number;
+  quantity?: number;
+}
 
 @Component({
   selector: 'app-tickets-history',
@@ -35,6 +42,11 @@ export class TicketsHistoryComponent implements OnInit {
   selectedLineId: number | null = null;
   selectedLineQuantity = 1;
   refundReason = '';
+  refundReturnToStock = true;
+
+  private refundOpeningSignature: string | null = null;
+  private lastRefundFingerprint: string | null = null;
+  private lastRefundIdempotencyKey: string | null = null;
 
   constructor(
     private readonly authService: AuthService,
@@ -144,6 +156,9 @@ export class TicketsHistoryComponent implements OnInit {
     this.selectedLineId = null;
     this.selectedLineQuantity = 1;
     this.refundReason = '';
+    this.refundReturnToStock = true;
+    this.refundOpeningSignature = null;
+    this.resetRefundAttemptState();
   }
 
   setRefundMode(mode: RefundMode): void {
@@ -183,6 +198,10 @@ export class TicketsHistoryComponent implements OnInit {
   }
 
   registerRefund(): void {
+    if (this.isRefunding) {
+      return;
+    }
+
     if (!this.selectedTicket) {
       this.errorMessage = 'No hay ticket seleccionado';
       return;
@@ -198,16 +217,27 @@ export class TicketsHistoryComponent implements OnInit {
       return;
     }
 
+    const reason = this.refundReason.trim();
+    if (!this.refundReturnToStock && reason.length === 0) {
+      this.errorMessage = 'El motivo es obligatorio cuando la devolución no regresa al stock';
+      return;
+    }
+
     const request: RefundRequest = {
       paymentId: this.selectedTicket.paymentId,
-      reason: this.refundReason.trim().length > 0 ? this.refundReason.trim() : undefined,
+      reason: reason.length > 0 ? reason : undefined,
       refundedBy: username,
+      returnToStock: this.refundReturnToStock,
+    };
+    const validationPayload: RefundValidationPayload = {
+      mode: this.refundMode,
     };
 
     // Mismo endpoint, tres caminos distintos de validación.
     // Aquí concentramos reglas para que no salgan devoluciones incoherentes.
     if (this.refundMode === 'FULL_TICKET') {
       request.amount = this.selectedTicket.refundableAmount;
+      validationPayload.amount = request.amount;
     } else if (this.refundMode === 'PARTIAL_TICKET') {
       if (this.refundAmount <= 0) {
         this.errorMessage = 'El importe de la devolución debe ser mayor que cero';
@@ -218,6 +248,7 @@ export class TicketsHistoryComponent implements OnInit {
         return;
       }
       request.amount = this.refundAmount;
+      validationPayload.amount = request.amount;
     } else {
       const selectedLine = this.getSelectedLine();
       if (!selectedLine) {
@@ -237,21 +268,48 @@ export class TicketsHistoryComponent implements OnInit {
 
       request.saleOrderLineId = selectedLine.lineId;
       request.quantity = safeQty;
+      validationPayload.saleOrderLineId = selectedLine.lineId;
+      validationPayload.quantity = safeQty;
     }
+
+    const idempotencyKey = this.getOrCreateIdempotencyKey(request);
+    const clientAttemptAt = new Date().toISOString();
+    const selectedPaymentId = this.selectedTicket.paymentId;
 
     this.errorMessage = null;
     this.feedbackMessage = null;
     this.isRefunding = true;
 
     this.posOperationsService
-      .registerRefund(request)
-      .pipe(finalize(() => (this.isRefunding = false)))
+      .getTicketByPaymentId(selectedPaymentId)
+      .pipe(
+        switchMap((latestTicket) => {
+          const latestSignature = this.buildRefundStateSignature(latestTicket);
+          if (this.refundOpeningSignature && this.refundOpeningSignature !== latestSignature) {
+            this.selectedTicket = latestTicket;
+            this.prepareRefundDefaults(latestTicket);
+            throw new Error('El ticket cambió mientras preparabas la devolución. Recarga y vuelve a confirmar.');
+          }
+
+          if (!this.canApplyRefundToLatestTicket(latestTicket, validationPayload)) {
+            this.selectedTicket = latestTicket;
+            this.prepareRefundDefaults(latestTicket);
+            throw new Error('El importe o cantidad ya no está disponible. Se recargó el ticket con el estado actual.');
+          }
+
+          return this.posOperationsService.registerRefund(request, {
+            idempotencyKey,
+            clientAttemptAt,
+          });
+        }),
+        switchMap(() => this.posOperationsService.getTickets()),
+        finalize(() => (this.isRefunding = false))
+      )
       .subscribe({
-        next: () => {
-          this.feedbackMessage = 'Devolución registrada correctamente';
-          // Recargamos listado para reflejar importes pendientes ya recalculados.
+        next: (tickets) => {
+          this.tickets = tickets;
+          this.feedbackMessage = `Devolución registrada correctamente (ref: ${idempotencyKey.slice(0, 8)})`;
           this.closeModal();
-          this.loadTickets();
         },
         error: (error: unknown) => {
           this.errorMessage = this.getErrorMessage(error, 'No se pudo registrar la devolución');
@@ -329,6 +387,77 @@ export class TicketsHistoryComponent implements OnInit {
     this.selectedLineId = firstRefundableLine?.lineId ?? null;
     this.selectedLineQuantity = 1;
     this.refundReason = '';
+    this.refundReturnToStock = true;
+    this.refundOpeningSignature = this.buildRefundStateSignature(detail);
+    this.resetRefundAttemptState();
+  }
+
+  private canApplyRefundToLatestTicket(ticket: TicketDetail, payload: RefundValidationPayload): boolean {
+    if (payload.mode === 'FULL_TICKET') {
+      return ticket.refundableAmount > 0;
+    }
+
+    if (payload.mode === 'PARTIAL_TICKET') {
+      if (typeof payload.amount !== 'number') {
+        return false;
+      }
+      return payload.amount > 0 && payload.amount <= ticket.refundableAmount;
+    }
+
+    if (!payload.saleOrderLineId || !payload.quantity) {
+      return false;
+    }
+
+    const line = ticket.lines.find((item) => item.lineId === payload.saleOrderLineId);
+    if (!line) {
+      return false;
+    }
+
+    return payload.quantity > 0 && payload.quantity <= line.refundableQuantity;
+  }
+
+  private buildRefundStateSignature(ticket: TicketDetail): string {
+    const linesSignature = ticket.lines
+      .map((line) => `${line.lineId}:${line.refundableQuantity}`)
+      .sort()
+      .join('|');
+
+    return `${ticket.paymentId}:${ticket.refundableAmount}:${linesSignature}`;
+  }
+
+  private getOrCreateIdempotencyKey(request: RefundRequest): string {
+    const fingerprint = JSON.stringify({
+      paymentId: request.paymentId,
+      saleOrderLineId: request.saleOrderLineId ?? null,
+      quantity: request.quantity ?? null,
+      amount: request.amount ?? null,
+      reason: request.reason ?? null,
+      refundedBy: request.refundedBy,
+      returnToStock: request.returnToStock ?? true,
+    });
+
+    if (this.lastRefundFingerprint === fingerprint && this.lastRefundIdempotencyKey) {
+      return this.lastRefundIdempotencyKey;
+    }
+
+    const generated = this.generateIdempotencyKey();
+    this.lastRefundFingerprint = fingerprint;
+    this.lastRefundIdempotencyKey = generated;
+    return generated;
+  }
+
+  private resetRefundAttemptState(): void {
+    this.lastRefundFingerprint = null;
+    this.lastRefundIdempotencyKey = null;
+  }
+
+  private generateIdempotencyKey(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    const randomChunk = Math.random().toString(36).slice(2, 10);
+    return `refund-${Date.now()}-${randomChunk}`;
   }
 
   private buildTicketFileContent(ticket: TicketDetail): string {
@@ -469,6 +598,10 @@ export class TicketsHistoryComponent implements OnInit {
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message.trim().length > 0) {
+      return error.message;
+    }
+
     if (error && typeof error === 'object') {
       const raw = (error as { error?: unknown }).error;
       if (typeof raw === 'string' && raw.trim().length > 0) {
