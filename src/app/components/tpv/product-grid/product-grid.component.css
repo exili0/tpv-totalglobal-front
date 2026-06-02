@@ -34,6 +34,26 @@
   cursor: pointer;
 }
 
+.product-card.out-of-stock {
+  position: relative;
+  opacity: 0.58;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
+.product-card.out-of-stock::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 155%;
+  border-top: 4px solid var(--text-color);
+  transform: translate(-50%, -50%) rotate(34deg);
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .product-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-xl);
@@ -41,6 +61,12 @@
 
 .product-card:active {
   transform: translateY(-2px);
+}
+
+.product-card.out-of-stock:hover,
+.product-card.out-of-stock:active {
+  transform: none;
+  box-shadow: var(--shadow-lg);
 }
 
 .product-image {
@@ -63,6 +89,30 @@
   color: var(--border-color);
   font-size: 12px;
   font-style: italic;
+}
+
+.no-image-name {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  background:
+    linear-gradient(160deg, var(--surface-light) 0%, var(--white) 100%);
+}
+
+.no-image-name span {
+  color: var(--primary-color);
+  font-weight: 800;
+  font-size: clamp(20px, 2.3vw, 30px);
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.no-image-card .product-image {
+  height: 170px;
 }
 
 .product-info {
@@ -110,18 +160,29 @@
   color: var(--warning-color);
 }
 
+.product-info .stock.stock-empty {
+  color: var(--error-text);
+  font-weight: 700;
+}
+
 .btn-toggle-details {
   margin: 0 12px 12px;
   align-self: center;
   width: 38px;
   height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0;
   border-radius: 50%;
-  border: 2px solid var(--tpv-control-border-color);
+  border: none;
   background-color: var(--tpv-control-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  color: #000000 !important;
+  line-height: 0;
+  overflow: hidden;
   transition: all 0.2s ease;
   box-shadow: var(--shadow);
 }
@@ -131,14 +192,21 @@
   box-shadow: var(--shadow-lg);
 }
 
+.btn-toggle-details:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .btn-toggle-details svg,
-.no-image svg {
-  fill: var(--tpv-control-border-color);
+.btn-toggle-details svg path {
+  fill: #000000 !important;
+  stroke: #000000 !important;
+  color: #000000 !important;
 }
 
 .btn-toggle-details svg {
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
   display: block;
 }
 

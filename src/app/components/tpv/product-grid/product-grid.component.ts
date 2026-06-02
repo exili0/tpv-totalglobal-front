@@ -57,6 +57,10 @@ export class ProductGridComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
+    if (this.isOutOfStock(product)) {
+      return;
+    }
+
     const quantity = this.quantitySelectorService.getCurrentQuantity();
     const mode = this.quantitySelectorService.getCurrentMode();
 
@@ -81,5 +85,9 @@ export class ProductGridComponent implements OnInit {
 
   isExpanded(productId: number): boolean {
     return this.expandedProductIds.has(productId);
+  }
+
+  isOutOfStock(product: Product): boolean {
+    return product.stock !== undefined && product.stock <= 0;
   }
 }
