@@ -325,6 +325,7 @@ export class OrderSummaryComponent implements OnInit {
         .subscribe({
           next: () => {
             this.cartService.clearCart();
+            this.isExpanded = false;
             this.currentStep = 1;
             this.splitPeopleCount = 1;
             this.notes = '';

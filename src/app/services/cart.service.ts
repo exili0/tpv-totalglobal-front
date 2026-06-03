@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, EMPTY, Observable, Subject } from 'rxjs';
 import { catchError, debounceTime, switchMap, take } from 'rxjs/operators';
 import { CartItem, CartSummary } from '../models/cart.model';
@@ -273,7 +274,14 @@ export class CartService {
       operatorSessionToken: this.authService.getSessionToken()
     }).pipe(
       catchError((error) => {
-        console.error('Error sincronizando pedido en backend:', error);
+        if (error instanceof HttpErrorResponse && error.status === 409) {
+          // Conflicto de concurrencia: dos operaciones intentaron modificar el stock del mismo
+          // producto a la vez. JPA rechazó la segunda gracias al campo @Version en Product.
+          // El usuario verá el error si ocurre durante el cobro (order-summary lo muestra).
+          console.warn('Conflicto de concurrencia en stock al sincronizar carrito (HTTP 409):', error.error?.message);
+        } else {
+          console.error('Error sincronizando pedido en backend:', error);
+        }
         return EMPTY;
       })
     );

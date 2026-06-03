@@ -33,10 +33,10 @@
           <p class="price">{{product.price | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
         </div>
         <small
-          *ngIf="product.stock !== undefined"
+          *ngIf="getDisplayedStock(product) !== null"
           class="stock"
           [class.stock-empty]="isOutOfStock(product)">
-          Stock: {{product.stock}}
+          Stock: {{ getDisplayedStock(product) }}
         </small>
       </div>
 
