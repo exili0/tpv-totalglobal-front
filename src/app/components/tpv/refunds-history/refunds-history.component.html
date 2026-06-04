@@ -1,53 +1,69 @@
-<app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
+<div class="page-wrapper">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
 
-<section class="refunds-panel">
-  <div class="refunds-header">
-    <div>
-      <h3>Devoluciones</h3>
-      <p>Tickets con devoluciones registradas (totales o parciales).</p>
+  <div class="page-content">
+    <div class="page-header">
+      <button (click)="goBack()" class="icon-button back-btn-container" title="Volver" aria-label="Volver al TPV">
+        <div class="btn-back">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+            <rect fill="none" height="24" width="24" />
+            <g><polygon points="17.77,3.77 16,2 6,12 16,22 17.77,20.23 9.54,12" /></g>
+          </svg>
+        </div>
+      </button>
+      <h1>Devoluciones</h1>
     </div>
 
-    <button type="button" class="refresh-button" (click)="loadRefunds()" [disabled]="isLoading">
-      Actualizar
-    </button>
+    <section class="refunds-panel">
+      <div class="refunds-header">
+        <div>
+          <h3>Devoluciones</h3>
+          <p>Tickets con devoluciones registradas (totales o parciales).</p>
+        </div>
+
+        <button type="button" class="refresh-button" (click)="loadRefunds()" [disabled]="isLoading">
+          Actualizar
+        </button>
+      </div>
+
+      <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
+
+      <div *ngIf="isLoading" class="state-box">Cargando devoluciones...</div>
+
+      <div *ngIf="!isLoading && !hasRefunds && !errorMessage" class="state-box">
+        No hay devoluciones registradas.
+      </div>
+
+      <div *ngIf="hasRefunds" class="table-wrap">
+        <table class="refunds-table">
+          <thead>
+            <tr>
+              <th>Devolución</th>
+              <th>Ticket</th>
+              <th>Hora devolución</th>
+              <th>Usuario</th>
+              <th>Importe</th>
+              <th>Línea</th>
+              <th>Destino stock</th>
+              <th>Motivo</th>
+              <th>Método</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let refund of refunds">
+              <td>#{{ refund.id }}</td>
+              <td>#{{ refund.payment.id }}</td>
+              <td>{{ refund.refundedAt | date:'dd,MM,yyyy' }}</td>
+              <td>{{ refund.refundedBy }}</td>
+              <td>{{ refund.amount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+              <td>{{ getLineTrace(refund) }}</td>
+              <td>{{ getStockDestinationLabel(refund.returnToStock) }}</td>
+              <td>{{ getReasonLabel(refund.reason) }}</td>
+              <td>{{ getPaymentMethodLabel(refund.payment.paymentMethod) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
-
-  <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
-
-  <div *ngIf="isLoading" class="state-box">Cargando devoluciones...</div>
-
-  <div *ngIf="!isLoading && !hasRefunds && !errorMessage" class="state-box">
-    No hay devoluciones registradas.
-  </div>
-
-  <div *ngIf="hasRefunds" class="table-wrap">
-    <table class="refunds-table">
-      <thead>
-        <tr>
-          <th>Devolución</th>
-          <th>Ticket</th>
-          <th>Hora devolución</th>
-          <th>Usuario</th>
-          <th>Importe</th>
-          <th>Línea</th>
-          <th>Destino stock</th>
-          <th>Motivo</th>
-          <th>Método</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let refund of refunds">
-          <td>#{{ refund.id }}</td>
-          <td>#{{ refund.payment.id }}</td>
-          <td>{{ refund.refundedAt | date:'dd,MM,yyyy' }}</td>
-          <td>{{ refund.refundedBy }}</td>
-          <td>{{ refund.amount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-          <td>{{ getLineTrace(refund) }}</td>
-          <td>{{ getStockDestinationLabel(refund.returnToStock) }}</td>
-          <td>{{ getReasonLabel(refund.reason) }}</td>
-          <td>{{ getPaymentMethodLabel(refund.payment.paymentMethod) }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+</div>

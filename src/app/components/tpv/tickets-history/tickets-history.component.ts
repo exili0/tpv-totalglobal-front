@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
 import { PaymentMethod, RefundRequest, TicketDetail, TicketSummary, TipLeaderboardEntry } from '../../../models/pos.model';
 import { AuthService } from '../../../services/auth.service';
@@ -49,12 +50,17 @@ export class TicketsHistoryComponent implements OnInit {
   private lastRefundIdempotencyKey: string | null = null;
 
   constructor(
+    private readonly router: Router,
     private readonly authService: AuthService,
     private readonly posOperationsService: PosOperationsService
   ) {}
 
   ngOnInit(): void {
     this.loadTickets();
+  }
+
+  goBack(): void {
+    this.router.navigate(['/tpv']);
   }
 
   loadTickets(): void {

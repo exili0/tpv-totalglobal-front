@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PaymentMethod, Refund } from '../../../models/pos.model';
 import { PosOperationsService } from '../../../services/pos-operations.service';
@@ -22,10 +23,17 @@ export class RefundsHistoryComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
 
-  constructor(private readonly posOperationsService: PosOperationsService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly posOperationsService: PosOperationsService
+  ) {}
 
   ngOnInit(): void {
     this.loadRefunds();
+  }
+
+  goBack(): void {
+    this.router.navigate(['/tpv']);
   }
 
   /** Obtiene devoluciones registradas y las ordena por fecha descendente. */
