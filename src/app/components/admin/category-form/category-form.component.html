@@ -31,7 +31,12 @@
       <!--------------------------------------------->
     <div class="form-group">
       <label for="parentCategoryId">Categoría Padre</label>
-      <input id="parentCategoryId" type="number" formControlName="parentCategoryId" placeholder="ID de categoría padre (opcional)">
+      <select id="parentCategoryId" formControlName="parentCategoryId">
+        <option [ngValue]="null">Categoría raíz</option>
+        <option *ngFor="let category of categories" [ngValue]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
     </div>
       <!--------------------------------------------->
     <div *ngIf="error" class="error-message">

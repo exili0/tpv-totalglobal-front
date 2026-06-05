@@ -5,6 +5,7 @@ import { ProductService } from '../../../services/product.service';
 import { Product } from '../../../models/product.model';
 import { ProductFormComponent } from '../product-form/product-form.component';
 import { NavbarComponent } from '../../navbar/navbar.component';
+import { AuditEvent, AuditService } from '../../../services/audit.service';
 
 /**
  * Pantalla de gestión de productos del panel de administración.
@@ -24,12 +25,15 @@ export class ProductManagementComponent implements OnInit {
   error: string | null = null;
   // Controla si el formulario de creación/edición está visible
   showForm = false;
+  showAuditModal = false;
   // Producto que se está editando; null si es una creación nueva
   selectedProduct: Product | null = null;
+  auditEntries: AuditEvent[] = [];
 
   constructor(
     private readonly router: Router,
-    private readonly productService: ProductService
+    private readonly productService: ProductService,
+    private readonly auditService: AuditService
   ) {}
 
   ngOnInit(): void {
@@ -60,6 +64,15 @@ export class ProductManagementComponent implements OnInit {
   openNewForm(): void {
     this.selectedProduct = null;
     this.showForm = true;
+  }
+
+  openAuditModal(): void {
+    this.auditEntries = this.auditService.getEvents('product');
+    this.showAuditModal = true;
+  }
+
+  closeAuditModal(): void {
+    this.showAuditModal = false;
   }
 
   /** Abre el formulario precargado con los datos del producto a editar. */

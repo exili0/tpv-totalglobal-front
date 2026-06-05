@@ -21,6 +21,7 @@ export class SetNewPasswordComponent implements OnInit {
   showNewPassword: boolean = false;
   showConfirmPassword: boolean = false;
   isFirstLogin: boolean = false;
+  returnTo: string = '/login';
 
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -42,6 +43,10 @@ export class SetNewPasswordComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.isFirstLogin = params['firstLogin'] === 'true';
+
+      if (params['returnTo']) {
+        this.returnTo = params['returnTo'];
+      }
 
       if (this.isFirstLogin) {
         const storedUsername = this.localStore?.getItem('firstLoginUsername');
@@ -72,10 +77,11 @@ export class SetNewPasswordComponent implements OnInit {
   goToLogin(): void {
     if (this.isFirstLogin) {
       this.localStore?.removeItem('firstLoginUsername');
-    } else {
-      this.sessionStore?.removeItem('restorePasswordUsername');
+      this.router.navigate(['/login']);
+      return;
     }
-    this.router.navigate(['/login']);
+
+    this.router.navigate(['/restorePassword'], { queryParams: { returnTo: this.returnTo } });
   }
 
   setNewPassword(): void {
@@ -111,10 +117,12 @@ export class SetNewPasswordComponent implements OnInit {
         if (this.isFirstLogin) {
           this.localStore?.removeItem('firstLoginUsername');
           this.sessionStore?.setItem('setupSecurityUsername', this.username);
-          this.router.navigate(['/restorePassword'], { queryParams: { setupMode: 'true' } });
+          this.router.navigate(['/restorePassword'], {
+            queryParams: { setupMode: 'true', returnTo: this.returnTo },
+          });
         } else {
           this.sessionStore?.removeItem('restorePasswordUsername');
-          this.router.navigate(['/login']);
+          this.router.navigate([this.returnTo]);
         }
       },
       error: (error) => {

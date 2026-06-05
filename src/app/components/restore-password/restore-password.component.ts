@@ -40,13 +40,20 @@ export class RestorePasswordComponent implements OnInit {
       if (params['returnTo']) {
         this.returnTo = params['returnTo'];
       }
-
+      //si venimos de configurar las preguntas de seguridad en el primer login,
+      //  se espera que el username esté guardado en localStorage. Si no está, se redirige a login para evitar bloqueos o estados inconsistentes
       if (this.isSetupMode) {
         const storedUsername = this.sessionStore?.getItem('setupSecurityUsername');
         if (storedUsername) {
           this.username = storedUsername;
         } else {
           this.router.navigate(['/login']);
+        }
+      } else {
+        //si no, se espera que el username esté en sesión tras verificar correctamente las preguntas de seguridad. Si no está, se redirige a login para evitar bloqueos o estados inconsistentes
+        const storedUsername = this.sessionStore?.getItem('restorePasswordUsername');
+        if (storedUsername) {
+          this.username = storedUsername;
         }
       }
     });
@@ -101,7 +108,7 @@ export class RestorePasswordComponent implements OnInit {
             this.isLoading = false;
             this.cdr.detectChanges();
             this.sessionStore?.setItem('restorePasswordUsername', this.username);
-            this.router.navigate(['/setNewPassword']);
+            this.router.navigate(['/setNewPassword'], { queryParams: { returnTo: this.returnTo } });
           },
           error: (error) => {
             this.isLoading = false;

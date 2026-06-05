@@ -5,6 +5,8 @@ import { CategoryService } from '../../../services/category.service';
 import { Category, CategoryRequest } from '../../../models/category.model';
 import { AccessibilityTheme, AccessibilityThemeService } from '../../../services/accessibility-theme.service';
 import { CategoryColorAccessibilityService } from '../../../services/category-color-accessibility.service';
+import { AuthService } from '../../../services/auth.service';
+import { AuditService } from '../../../services/audit.service';
 
 @Component({
   selector: 'app-category-form',
@@ -19,6 +21,7 @@ export class CategoryFormComponent implements OnInit {
   @Output() formSubmitted = new EventEmitter<void>();
 
   form: FormGroup;
+  categories: Category[] = [];
   isLoading = false;
   error: string | null = null;
   isEditMode = false;
@@ -27,7 +30,9 @@ export class CategoryFormComponent implements OnInit {
     private fb: FormBuilder,
     private categoryService: CategoryService,
     private accessibilityThemeService: AccessibilityThemeService,
-    private categoryColorAccessibilityService: CategoryColorAccessibilityService
+    private categoryColorAccessibilityService: CategoryColorAccessibilityService,
+    private authService: AuthService,
+    private auditService: AuditService
   ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -38,6 +43,8 @@ export class CategoryFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
+
     if (this.category) {
       this.isEditMode = true;
       this.form.patchValue({
@@ -49,6 +56,19 @@ export class CategoryFormComponent implements OnInit {
     }
   }
 
+  private loadCategories(): void {
+    this.categoryService.getAllCategories().subscribe({
+      next: (categories) => {
+        this.categories = this.isEditMode && this.category
+          ? categories.filter((candidate) => candidate.id !== this.category!.id)
+          : categories;
+      },
+      error: (err) => {
+        console.error('Error cargando categorías para el formulario:', err);
+      },
+    });
+  }
+
   /**
    * Env�a el formulario (crear o actualizar)
    */
@@ -57,16 +77,32 @@ export class CategoryFormComponent implements OnInit {
 
     this.isLoading = true;
     this.error = null;
-    const request: CategoryRequest = this.form.value;
+    const parentCategoryIdValue = this.form.value.parentCategoryId;
+    const request: CategoryRequest = {
+      ...this.form.value,
+      parentCategoryId: parentCategoryIdValue === null || parentCategoryIdValue === ''
+        ? null
+        : Number(parentCategoryIdValue),
+    };
 
     const operation = this.isEditMode
       ? this.categoryService.updateCategory(this.category!.id, request)
       : this.categoryService.createCategory(request);
 
     operation.subscribe({
-      next: () => {
+      next: (savedCategory) => {
         // Reseteamos isLoading antes de emitir para que el botón no quede bloqueado
         // si el padre reutiliza el formulario sin destruirlo.
+        if (!this.isEditMode) {
+          const actor = this.authService.getCurrentUsername() || 'usuario';
+          const parentName = this.categories.find((category) => category.id === request.parentCategoryId)?.name;
+          this.auditService.recordCreated(
+            'category',
+            savedCategory.name || request.name,
+            actor,
+            parentName ? `Padre: ${parentName}` : 'Categoría raíz'
+          );
+        }
         this.isLoading = false;
         this.formSubmitted.emit();
       },

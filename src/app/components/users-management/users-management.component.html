@@ -1,10 +1,8 @@
-<div class="users-managament-wrapper">
-    <app-navbar></app-navbar>
+<div class="page-wrapper">
+    <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
 
-    <div class="managament-content">
-        <h2>Usuarios</h2>
-        
-        <div class="table-header">
+    <div class="page-content">
+        <div class="page-header">
             <button (click)="gotoAdminView()" class="icon-button back-btn-container" title="Volver" aria-label="Volver al menú administrador">
                 <div class="btn-back">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
@@ -13,7 +11,7 @@
                     </svg>
                 </div>
             </button>
-
+            <h1>Gestión de Usuarios</h1>
             <button class="btn-add" type="button" title="Añadir" aria-label="Añadir" (click)="openAddUserModal()">+</button>
         </div>
 

@@ -20,12 +20,24 @@
         </div>
 
         <div *ngIf="!isLoading && categories.length > 0" class="categories-list">
-            <button *ngFor="let category of categories; let i = index"
-                  (click)="selectCategory(category)"
+          <ng-container *ngFor="let category of categories; let i = index">
+            <button
+              (click)="selectCategory(category)"
               [ngStyle]="getCategoryButtonStyles(category, i)"
-                  class="category-btn">
-            {{category.name}}
-          </button>
+              class="category-btn">
+              {{category.name}}
+            </button>
+
+            <div *ngIf="category.subcategories?.length" class="subcategories-list">
+              <button
+                *ngFor="let subcategory of category.subcategories; let j = index"
+                (click)="selectCategory(subcategory)"
+                [ngStyle]="getCategoryButtonStyles(subcategory, i + j + 1)"
+                class="category-btn category-btn--child">
+                {{subcategory.name}}
+              </button>
+            </div>
+          </ng-container>
         </div>
       </div>
     </aside>

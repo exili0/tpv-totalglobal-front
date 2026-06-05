@@ -95,7 +95,11 @@ export class NavbarComponent implements OnInit {
   }
 
   gotoRestorePassword(): void {
-    this.router.navigate(['/restorePassword']);
+    this.closeMenu();
+    // si el usuario ya estaba en una ruta protegida, lo redirigimos de vuelta a esa ruta tras restaurar la contraseña
+    const currentUrl = this.router.url.split('?')[0];
+    const returnTo = currentUrl && currentUrl !== '/login' ? currentUrl : '/login';
+    this.router.navigate(['/restorePassword'], { queryParams: { returnTo } });
   }
 
   goToAccessibility(): void {

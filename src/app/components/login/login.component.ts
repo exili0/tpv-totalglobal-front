@@ -78,6 +78,6 @@ export class LoginComponent { // Clase renombrada a LoginComponent para seguir e
   }
 
   goToRestorePassword(): void {
-    this.router.navigate(['/restorePassword']);
+    this.router.navigate(['/restorePassword'], { queryParams: { returnTo: '/login' } });
   }
 }

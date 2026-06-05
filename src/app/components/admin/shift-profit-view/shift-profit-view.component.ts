@@ -37,6 +37,10 @@ export class ShiftProfitViewComponent implements OnInit {
     private readonly router: Router
   ) {}
 
+  goBack(): void {
+    this.router.navigate(['/admin-view']);
+  }
+
   /**
    * Carga el histórico de turnos y resetea estados visuales de feedback
    * Si backend aún no expone /shifts, se muestra un mensaje guiado

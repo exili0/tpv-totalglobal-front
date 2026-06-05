@@ -7,6 +7,7 @@ import { CategoryFormComponent } from '../category-form/category-form.component'
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { AccessibilityTheme, AccessibilityThemeService } from '../../../services/accessibility-theme.service';
 import { CategoryColorAccessibilityService } from '../../../services/category-color-accessibility.service';
+import { AuditEvent, AuditService } from '../../../services/audit.service';
 
 /**
  * Pantalla de gestión de categorías del panel de administración.
@@ -26,14 +27,17 @@ export class CategoryManagementComponent implements OnInit {
   error: string | null = null;
   // Controla si el formulario de creación/edición está visible
   showForm = false;
+  showAuditModal = false;
   // Categoría que se está editando; null si es una creación nueva
   selectedCategory: Category | null = null;
+  auditEntries: AuditEvent[] = [];
 
   constructor(
     private readonly router: Router,
     private readonly categoryService: CategoryService,
     private readonly accessibilityThemeService: AccessibilityThemeService,
-    private readonly categoryColorAccessibilityService: CategoryColorAccessibilityService
+    private readonly categoryColorAccessibilityService: CategoryColorAccessibilityService,
+    private readonly auditService: AuditService
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +70,15 @@ export class CategoryManagementComponent implements OnInit {
     this.showForm = true;
   }
 
+  openAuditModal(): void {
+    this.auditEntries = this.auditService.getEvents('category');
+    this.showAuditModal = true;
+  }
+
+  closeAuditModal(): void {
+    this.showAuditModal = false;
+  }
+
   /** Abre el formulario precargado con los datos de la categoría a editar. */
   editCategory(category: Category): void {
     this.selectedCategory = category;
@@ -82,7 +95,7 @@ export class CategoryManagementComponent implements OnInit {
       this.categoryService.deleteCategory(id).subscribe({
         next: () => this.loadCategories(),
         error: (err) => {
-          this.error = 'Error al eliminar categoría';
+          this.error = err?.error?.message || err?.message || 'Error al eliminar categoría';
           console.error(err);
         },
       });

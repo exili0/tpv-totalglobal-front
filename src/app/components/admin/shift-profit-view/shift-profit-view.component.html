@@ -1,4 +1,21 @@
-<app-navbar [isMenuOpen]="false" [transparentBackdrop]="true"></app-navbar>
+<div class="page-wrapper">
+  <app-navbar [isMenuOpen]="false" [transparentBackdrop]="false"></app-navbar>
+
+  <div class="page-content">
+    <div class="page-header">
+      <button (click)="goBack()" class="icon-button back-btn-container" title="Volver" aria-label="Volver al menú administrador">
+        <div class="btn-back">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+            <rect fill="none" height="24" width="24" />
+            <g><polygon points="17.77,3.77 16,2 6,12 16,22 17.77,20.23 9.54,12" /></g>
+          </svg>
+        </div>
+      </button>
+      <h1>Ganancias por turno</h1>
+      <button type="button" class="refresh-button" (click)="loadShifts()" [disabled]="isLoading">
+        Actualizar
+      </button>
+    </div>
 
 <section class="profits-panel">
   <div class="profits-header">
@@ -6,10 +23,6 @@
       <h3>Ganancias por turno de caja</h3>
       <p>Consulta apertura, cierre y beneficio por cada turno registrado.</p>
     </div>
-
-    <button type="button" class="refresh-button" (click)="loadShifts()" [disabled]="isLoading">
-      Actualizar
-    </button>
   </div>
 
   <div class="filters-grid">
@@ -101,4 +114,6 @@
       </tbody>
     </table>
   </div>
-</section>
+  </section>
+  </div>
+</div>

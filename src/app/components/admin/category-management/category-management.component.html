@@ -12,6 +12,7 @@
         </div>
       </button>
       <h1>Gestión de Categorías</h1>
+      <button type="button" class="btn-audit" (click)="openAuditModal()">Auditoría</button>
     </div>
       <!--------------------------------------------->
     <div class="admin-container">
@@ -36,6 +37,28 @@
 
       <div *ngIf="error" class="error">
         <p>{{error}}</p>
+      </div>
+
+      <div class="modal-overlay" *ngIf="showAuditModal" (click)="closeAuditModal()">
+        <div class="audit-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Auditoría de categorías</h3>
+            <button class="btn-modal-close" type="button" (click)="closeAuditModal()" aria-label="Cerrar auditoría"> × </button>
+          </div>
+
+          <div *ngIf="auditEntries.length === 0" class="audit-empty">
+            No hay altas registradas todavía.
+          </div>
+
+          <ul *ngIf="auditEntries.length > 0" class="audit-list">
+            <li *ngFor="let entry of auditEntries" class="audit-item">
+              <strong>{{ entry.entityName }}</strong>
+              <span>{{ entry.actor }}</span>
+              <small>{{ entry.details || 'Alta de categoría' }}</small>
+              <time>{{ entry.createdAt | date:'dd/MM/yyyy HH:mm' }}</time>
+            </li>
+          </ul>
+        </div>
       </div>
         <!--------------------------------------------->
       <div *ngIf="!isLoading && categories.length > 0" class="categories-table">

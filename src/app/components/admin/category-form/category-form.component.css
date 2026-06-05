@@ -28,17 +28,20 @@
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   padding: 10px 12px;
   border: var(--border-primary);
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
   color: var(--primary-color);
+  background-color: var(--white);
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
@@ -71,6 +74,12 @@
 }
 
 .color-preview-text {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.hint-text {
+  margin-top: 6px;
   color: var(--text-muted);
   font-size: 12px;
 }

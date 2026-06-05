@@ -5,6 +5,8 @@ import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { Product, ProductRequest } from '../../../models/product.model';
 import { Category } from '../../../models/category.model';
+import { AuthService } from '../../../services/auth.service';
+import { AuditService } from '../../../services/audit.service';
 
 /**
  * Formulario reactivo para crear o editar un producto.
@@ -33,7 +35,9 @@ export class ProductFormComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly productService: ProductService,
-    private readonly categoryService: CategoryService
+    private readonly categoryService: CategoryService,
+    private readonly authService: AuthService,
+    private readonly auditService: AuditService
   ) {
     // Definimos la estructura del formulario con sus validaciones en el constructor
     this.form = this.fb.group({
@@ -91,9 +95,19 @@ export class ProductFormComponent implements OnInit {
       : this.productService.createProduct(request);
 
     operation.subscribe({
-      next: () => {
+      next: (savedProduct) => {
         // Reseteamos isLoading antes de emitir para que el botón no quede bloqueado
         // si el padre reutiliza el formulario sin destruirlo.
+        if (!this.isEditMode) {
+          const actor = this.authService.getCurrentUsername() || 'usuario';
+          const categoryName = this.categories.find((category) => category.id === request.categoryId)?.name;
+          this.auditService.recordCreated(
+            'product',
+            savedProduct.name || request.name,
+            actor,
+            categoryName ? `Categoría: ${categoryName}` : undefined
+          );
+        }
         this.isLoading = false;
         this.formSubmitted.emit();
       },
