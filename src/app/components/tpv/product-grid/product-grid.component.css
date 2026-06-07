@@ -69,6 +69,18 @@
   box-shadow: var(--shadow-lg);
 }
 
+.product-card.locked-card {
+  cursor: not-allowed;
+  opacity: 0.72;
+  filter: saturate(0.75);
+}
+
+.product-card.locked-card:hover,
+.product-card.locked-card:active {
+  transform: none;
+  box-shadow: var(--shadow-lg);
+}
+
 .product-image {
   width: 100%;
   height: 120px;

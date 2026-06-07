@@ -1,5 +1,8 @@
 <div class="cart-container">
   <h2>Carrito de Compra</h2>
+  <p class="lock-note" *ngIf="(isCartLocked$ | async) ?? false">
+    Pedido de Glovo bloqueado: no se pueden añadir, eliminar ni modificar productos.
+  </p>
   <!-- Lista de productos en el carrito -->
   <div *ngIf="(cartItems$ | async) as items" class="cart-shell">
     <div class="cart-content">
@@ -15,21 +18,21 @@
           </div>
 
           <div class="item-quantity">
-            <button (click)="updateQuantity(item.productId, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
-            <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.productId, item.quantity)" min="1">
-            <button (click)="updateQuantity(item.productId, item.quantity + 1)">+</button>
+            <button (click)="updateQuantity(item.productId, item.quantity - 1)" [disabled]="item.quantity <= 1 || ((isCartLocked$ | async) ?? false)">-</button>
+            <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.productId, item.quantity)" min="1" [disabled]="(isCartLocked$ | async) ?? false">
+            <button (click)="updateQuantity(item.productId, item.quantity + 1)" [disabled]="(isCartLocked$ | async) ?? false">+</button>
           </div>
 
           <div class="item-total">
             <p>{{item.total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
-            <button (click)="removeItem(item.productId)" class="btn-remove">X</button>
+            <button (click)="removeItem(item.productId)" class="btn-remove" [disabled]="(isCartLocked$ | async) ?? false">X</button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="cart-footer" *ngIf="$any(items).length > 0">
-      <button (click)="clearCart()" class="btn-clear">Limpiar Carrito</button>
+      <button (click)="clearCart()" class="btn-clear" [disabled]="(isCartLocked$ | async) ?? false">Limpiar Carrito</button>
     </div>
   </div>
 </div>

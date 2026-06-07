@@ -1,0 +1,91 @@
+<app-navbar></app-navbar>
+
+<main class="glovo-simulator-page">
+  <section class="sim-card">
+    <header class="sim-header">
+      <h1>Simulador de Pedido Glovo</h1>
+      <p>Genera un pedido simulado y tícalo automáticamente en el TPV para validar flujo real de caja y ticket.</p>
+    </header>
+
+    <div class="sim-grid">
+      <label>
+        <span>Order ID (Glovo)</span>
+        <input type="text" [(ngModel)]="glovoOrderId" placeholder="12345" />
+      </label>
+
+      <label>
+        <span>Order Code</span>
+        <input type="text" [(ngModel)]="orderCode" placeholder="BA7DWBUL" />
+      </label>
+
+      <label>
+        <span>Store ID (external)</span>
+        <input type="text" [(ngModel)]="storeId" placeholder="STORE-001" />
+      </label>
+
+      <label>
+        <span>Cliente</span>
+        <input type="text" [(ngModel)]="customerName" placeholder="Nombre cliente" />
+      </label>
+
+      <label>
+        <span>Método de pago Glovo</span>
+        <select [(ngModel)]="paymentMethod">
+          <option value="DELAYED">DELAYED (recomendado en stage)</option>
+          <option value="CASH">CASH</option>
+        </select>
+      </label>
+
+      <label class="notes">
+        <span>Requisitos especiales</span>
+        <textarea rows="3" [(ngModel)]="specialRequirements" placeholder="Sin cebolla, alergia frutos secos..."></textarea>
+      </label>
+    </div>
+
+    <section class="lines-section">
+      <div class="lines-header">
+        <h2>Líneas del pedido</h2>
+        <button type="button" class="secondary" (click)="addLine()">+ Añadir línea</button>
+      </div>
+
+      <p class="loading" *ngIf="isLoadingProducts">Cargando productos activos...</p>
+
+      <div class="line-row" *ngFor="let line of lines; let i = index">
+        <select [(ngModel)]="line.productId">
+          <option [ngValue]="null">Selecciona producto</option>
+          <option *ngFor="let product of products" [ngValue]="product.id">
+            {{ product.name }} - {{ product.price | number:'1.2-2' }} €
+          </option>
+        </select>
+
+        <input type="number" min="1" [(ngModel)]="line.quantity" />
+
+        <button type="button" class="danger" (click)="removeLine(i)">Eliminar</button>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="primary" (click)="submitSimulation()" [disabled]="isSubmitting || isLoadingProducts">
+        {{ isSubmitting ? 'Simulando...' : 'Simular y generar ticket' }}
+      </button>
+      <button type="button" class="secondary" (click)="openTickets()">Ir a tickets</button>
+    </div>
+
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="ok" *ngIf="feedbackMessage">{{ feedbackMessage }}</p>
+
+    <section class="result" *ngIf="lastSimulation as result">
+      <h3>Resultado</h3>
+      <p><strong>Servicio:</strong> {{ result.serviceLabel }}</p>
+      <p><strong>Mesa virtual:</strong> {{ result.tableNumber }}</p>
+      <p><strong>Sale Order ID:</strong> {{ result.saleOrderId }}</p>
+      <p><strong>Payment ID:</strong> {{ result.paymentId ?? 'Pendiente' }}</p>
+      <p><strong>Total:</strong> {{ result.totalAmount | number:'1.2-2' }} €</p>
+      <p><strong>Método TPV:</strong> {{ result.tpvPaymentMethod }}</p>
+      <p><strong>Estado cobro:</strong> {{ result.pendingCashPayment ? 'Pendiente de cobro (CASH)' : 'Cobrado' }}</p>
+      <p><strong>Pagado:</strong> {{ result.paidAt ? (result.paidAt | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</p>
+      <p><strong>Order ID:</strong> {{ result.glovoOrderId || '-' }}</p>
+      <p><strong>Order Code:</strong> {{ result.orderCode || '-' }}</p>
+    </section>
+  </section>
+</main>

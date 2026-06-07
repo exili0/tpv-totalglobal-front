@@ -26,6 +26,16 @@
   padding-bottom: 12px;
 }
 
+.lock-note {
+  margin: -4px 0 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff4db;
+  color: #8a6116;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .empty-cart {
   text-align: center;
   padding: 40px 20px;
@@ -100,6 +110,19 @@
 
 .item-quantity button:hover {
   background-color: var(--border-color);
+}
+
+.item-quantity button:disabled,
+.btn-remove:disabled,
+.btn-clear:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.item-quantity button:disabled:hover,
+.btn-remove:disabled:hover,
+.btn-clear:disabled:hover {
+  background-color: inherit;
 }
 
 .item-quantity input {

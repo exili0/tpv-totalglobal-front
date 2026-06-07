@@ -1,3 +1,5 @@
+import { Category } from './category.model';
+
 /**
  * Modelo de Producto para el TPV
  */
@@ -11,8 +13,8 @@ export interface Product {
   imageUrl?: string;
   active: boolean;
   stock?: number;
-  categoryId: number;
-  category?: any;
+  categoryId?: number;
+  category?: Category;
 }
 
 /**

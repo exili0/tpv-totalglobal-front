@@ -7,6 +7,7 @@ import { SaleOrder, SaleOrderLine } from '../models/pos.model';
 import { Product } from '../models/product.model';
 import { PosOperationsService } from './pos-operations.service';
 import { AuthService } from './auth.service';
+import { TableService } from './table.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,8 @@ export class CartService {
   private cartSummary$ = new BehaviorSubject<CartSummary>(this.getEmptySummary());
   /** Mesa actualmente operada en TPV. */
   private activeTableNumber$ = new BehaviorSubject<number | null>(null);
+  /** Bloquea edición del carrito cuando el pedido pertenece a Glovo. */
+  private isCartLocked$ = new BehaviorSubject<boolean>(false);
   /** Carritos independientes por número de mesa para mantener contexto. */
   private tableCarts: Record<number, CartItem[]> = {};
   /** Cola reactiva para sincronización diferida con backend. */
@@ -26,7 +29,8 @@ export class CartService {
 
   constructor(
     private posOperationsService: PosOperationsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private tableService: TableService
   ) {
     this.loadCartsFromStorage();
     this.initializeAutoSync();
@@ -40,9 +44,18 @@ export class CartService {
     return this.activeTableNumber$.value;
   }
 
+  getCartLocked(): Observable<boolean> {
+    return this.isCartLocked$.asObservable();
+  }
+
+  isCurrentCartLocked(): boolean {
+    return this.isCartLocked$.value;
+  }
+
   /** Cambia mesa activa y refresca su estado desde backend. */
   setActiveTable(tableNumber: number): void {
     this.activeTableNumber$.next(tableNumber);
+    this.resolveCartLockFromTable(tableNumber);
     const items = this.cloneItems(this.tableCarts[tableNumber] ?? []);
     this.updateSubjects(items);
     // Primero mostramos estado local para respuesta instantánea en UI,
@@ -67,6 +80,7 @@ export class CartService {
       next: (openOrders) => {
         const order = openOrders.find((candidate) => candidate.table?.tableNumber === tableNumber);
         const backendItems = this.mapOrderToCartItems(order);
+        this.updateCartLockState(tableNumber, order?.table?.displayName ?? null);
 
         // Bandera clave: si no la levantamos, la hidratación dispara sync
         // y terminamos empujando al backend lo mismo que acabamos de leer.
@@ -104,6 +118,10 @@ export class CartService {
    * Agrega un producto al carrito o incrementa cantidad si ya existe
    */
   addToCart(product: Product, quantity: number = 1): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return;
@@ -135,6 +153,10 @@ export class CartService {
   }
 
   subtractFromCart(product: Product, quantity: number = 1): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return;
@@ -159,6 +181,10 @@ export class CartService {
    * Actualiza la cantidad de un item en el carrito
    */
   updateItemQuantity(productId: number, quantity: number): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return;
@@ -183,6 +209,10 @@ export class CartService {
    * Elimina un item del carrito
    */
   removeFromCart(productId: number): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return;
@@ -196,6 +226,10 @@ export class CartService {
    * Limpia completamente el carrito
    */
   clearCart(): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return;
@@ -237,6 +271,10 @@ export class CartService {
    * Si queda vacío, limpia orden abierta; si no, actualiza/crea pedido.
    */
   private pushActiveTableToBackend(): Observable<SaleOrder | void> {
+    if (this.isCartLocked$.value) {
+      return EMPTY;
+    }
+
     const tableNumber = this.activeTableNumber$.value;
     if (tableNumber === null) {
       return EMPTY;
@@ -360,6 +398,30 @@ export class CartService {
 
   private cloneItems(items: CartItem[]): CartItem[] {
     return items.map((item) => ({ ...item }));
+  }
+
+  private ensureCartEditable(): boolean {
+    return !this.isCartLocked$.value;
+  }
+
+  private resolveCartLockFromTable(tableNumber: number): void {
+    this.tableService.getActiveTables().pipe(take(1)).subscribe({
+      next: (tables) => {
+        const table = tables.find((candidate) => candidate.tableNumber === tableNumber);
+        this.updateCartLockState(tableNumber, table?.displayName ?? null);
+      },
+      error: () => {
+        // Fallback de seguridad: mantener criterio por numeración técnica de mesas virtuales.
+        this.updateCartLockState(tableNumber, null);
+      },
+    });
+  }
+
+  private updateCartLockState(tableNumber: number, displayName: string | null): void {
+    const normalizedName = (displayName ?? '').trim().toUpperCase();
+    const isGlovoByName = normalizedName.startsWith('GLOVO ');
+    const isGlovoByRange = tableNumber >= 1000;
+    this.isCartLocked$.next(isGlovoByName || isGlovoByRange);
   }
 
   /**

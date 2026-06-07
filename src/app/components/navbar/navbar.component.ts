@@ -131,6 +131,11 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/tpv/tickets']);
   }
 
+  goToGlovoIntegration(): void {
+    this.closeMenu();
+    this.router.navigate(['/integrations/glovo']);
+  }
+
   /**
    * Cierra el modal operativo activo (turno o reporte Z) con confirmación del usuario.
    * Evita cierres accidentales en medio de una operación.

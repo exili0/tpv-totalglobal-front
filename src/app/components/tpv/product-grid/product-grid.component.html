@@ -16,9 +16,10 @@
       *ngFor="let product of products"
       class="product-card"
       [class.out-of-stock]="isOutOfStock(product)"
+      [class.locked-card]="isCartLocked"
       [class.no-image-card]="!product.imageUrl"
       (click)="addToCart(product)"
-      [attr.aria-disabled]="isOutOfStock(product)">
+      [attr.aria-disabled]="isOutOfStock(product) || isCartLocked">
       <div class="product-image">
         <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name">
         <div *ngIf="!product.imageUrl" class="no-image-name" [attr.aria-label]="'Producto sin imagen: ' + product.name">

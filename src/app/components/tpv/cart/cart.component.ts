@@ -21,12 +21,14 @@ export class CartComponent implements OnInit {
   // Streams reactivos del servicio para que la vista se actualice automáticamente
   cartItems$!: Observable<CartItem[]>;
   cartSummary$!: Observable<CartSummary>;
+  isCartLocked$!: Observable<boolean>;
 
   constructor(private readonly cartService: CartService) {}
 
   ngOnInit(): void {
     this.cartItems$ = this.cartService.getCartItems();
     this.cartSummary$ = this.cartService.getCartSummary();
+    this.isCartLocked$ = this.cartService.getCartLocked();
   }
 
   /** Elimina un producto del carrito por completo. */

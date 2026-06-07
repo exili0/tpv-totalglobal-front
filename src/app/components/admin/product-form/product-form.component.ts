@@ -57,6 +57,7 @@ export class ProductFormComponent implements OnInit {
     if (this.product) {
       // Si nos pasan un producto, entramos en modo edición y rellenamos el formulario
       this.isEditMode = true;
+      const resolvedCategoryId = this.product.categoryId ?? this.product.category?.id ?? '';
       this.form.patchValue({
         name: this.product.name,
         description: this.product.description,
@@ -65,7 +66,7 @@ export class ProductFormComponent implements OnInit {
         barcode: this.product.barcode,
         imageUrl: this.product.imageUrl,
         stock: this.product.stock,
-        categoryId: this.product.categoryId,
+        categoryId: resolvedCategoryId,
       });
     }
   }

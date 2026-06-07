@@ -21,6 +21,7 @@ export class ProductGridComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   expandedProductIds = new Set<number>();
+  isCartLocked = false;
 
   // Baseline de carrito cuando se obtuvo el snapshot de stock actual desde backend.
   private baselineCartQuantities = new Map<number, number>();
@@ -44,6 +45,12 @@ export class ProductGridComponent implements OnInit, OnDestroy {
       this.cartService.getActiveTableNumber().subscribe(() => {
         // Al cambiar de mesa, el carrito se reinicia con los productos de la nueva mesa.
         this.resetBaselineFromCurrentCart();
+      })
+    );
+
+    this.subscriptions.add(
+      this.cartService.getCartLocked().subscribe((isLocked) => {
+        this.isCartLocked = isLocked;
       })
     );
 
@@ -83,6 +90,10 @@ export class ProductGridComponent implements OnInit, OnDestroy {
   }
 
   addToCart(product: Product): void {
+    if (this.isCartLocked) {
+      return;
+    }
+
     if (this.isOutOfStock(product)) {
       return;
     }

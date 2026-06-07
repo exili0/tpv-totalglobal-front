@@ -14,6 +14,7 @@ import { TicketsHistoryComponent } from './components/tpv/tickets-history/ticket
 import { RefundsHistoryComponent } from './components/tpv/refunds-history/refunds-history.component';
 import { ShiftProfitViewComponent } from './components/admin/shift-profit-view/shift-profit-view.component';
 import { ShiftDetailViewComponent } from './components/admin/shift-detail-view/shift-detail-view.component';
+import { GlovoSimulatorComponent } from './components/integrations/glovo-simulator/glovo-simulator.component';
 import { adminGuard, userGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'tpv/mesa/:tableNumber', component: TpvMainComponent, canActivate: [userGuard] },
   { path: 'tpv/tickets', component: TicketsHistoryComponent, canActivate: [userGuard] },
   { path: 'tpv/devoluciones', component: RefundsHistoryComponent, canActivate: [userGuard] },
+  { path: 'integrations/glovo', component: GlovoSimulatorComponent, canActivate: [userGuard] },
   { path: 'accesibilidad', component: AccessibilitySettingsComponent, canActivate: [userGuard] },
   
   // Admin - Solo Admin
