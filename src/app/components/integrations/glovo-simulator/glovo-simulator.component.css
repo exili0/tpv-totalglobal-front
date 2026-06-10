@@ -100,19 +100,19 @@ button {
 }
 
 .danger {
-  background: #fee2e2;
-  color: #991b1b;
+  background: color-mix(in srgb, var(--danger-color) 12%, var(--white) 88%);
+  color: var(--danger-dark);
 }
 
 .error {
   margin-top: 12px;
-  color: #b91c1c;
+  color: var(--danger-color);
   font-weight: 700;
 }
 
 .ok {
   margin-top: 12px;
-  color: #166534;
+  color: var(--success-color);
   font-weight: 700;
 }
 

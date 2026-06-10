@@ -43,8 +43,10 @@ export class LoginComponent { // Clase renombrada a LoginComponent para seguir e
     this.authService.login(username, password).subscribe({
       next: (response) => {
         const role = response.role.toUpperCase();
+        // Guardamos JWT + identidad para que el interceptor autorice llamadas posteriores.
+        this.authService.saveAuthToken(response.token);
         this.authService.saveUserRole(role);
-        this.authService.saveCurrentUsername(username);
+        this.authService.saveCurrentUsername(response.username || username);
 
         // Redirección simple según el rol del back
         if (role === 'ADMIN') {

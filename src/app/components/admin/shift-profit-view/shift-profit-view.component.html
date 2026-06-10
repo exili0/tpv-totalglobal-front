@@ -105,9 +105,12 @@
           <td>{{ shift.openingFloat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ shift.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td class="profit-cell">{{ shift.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-          <td>
+          <td class="actions-cell">
             <button type="button" class="details-button" (click)="viewShiftDetails(shift.id)">
               Ver productos
+            </button>
+            <button type="button" class="details-button" (click)="openZReportForShift(shift)">
+              Ver Z del día
             </button>
           </td>
         </tr>

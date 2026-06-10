@@ -6,6 +6,8 @@ import { isPlatformBrowser } from '@angular/common';
 /** Respuesta mínima de login usada por el front para enrutar por rol. */
 export interface LoginResponse {
   role: string;
+  token: string;
+  username: string;
 }
 
 /** Payload para validar preguntas de seguridad al recuperar contraseña. */
@@ -40,6 +42,8 @@ export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private platformId = inject(PLATFORM_ID);
   private readonly sessionTokenKey = 'tpv_session_token';
+  // Token JWT firmado por backend tras login.
+  private readonly authTokenKey = 'tpv_auth_token';
 
   constructor(private http: HttpClient) { }
 
@@ -53,12 +57,18 @@ export class AuthService {
 
   /** Inicia sesión contra backend. */
   login(username: string, password: string): Observable<LoginResponse> {
+    // El backend devuelve role + username + token JWT.
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password });
   }
 
   /** Persiste el rol para guards y navegación condicional. */
   saveUserRole(role: string): void {
     this.sessionStore?.setItem('userRole', role);
+  }
+
+  /** Persiste token JWT para autorización de API en interceptor. */
+  saveAuthToken(token: string): void {
+    this.sessionStore?.setItem(this.authTokenKey, token);
   }
 
   /** Persiste usuario actual para trazabilidad operativa (pedidos/devoluciones). */
@@ -74,6 +84,11 @@ export class AuthService {
   /** Lee el username autenticado. */
   getCurrentUsername(): string | null {
     return this.sessionStore?.getItem('currentUsername') ?? null;
+  }
+
+  /** Devuelve token JWT activo, o null si no hay sesión autenticada. */
+  getAuthToken(): string | null {
+    return this.sessionStore?.getItem(this.authTokenKey) ?? null;
   }
 
   /**
@@ -93,7 +108,8 @@ export class AuthService {
 
   /** Estado simple de autenticación basado en rol guardado. */
   isAuthenticated(): boolean {
-    return this.getUserRole() !== null;
+    // Consideramos sesión válida solo si existen rol y token.
+    return this.getUserRole() !== null && this.getAuthToken() !== null;
   }
 
   /** Verifica preguntas de seguridad para habilitar reset de contraseña. */

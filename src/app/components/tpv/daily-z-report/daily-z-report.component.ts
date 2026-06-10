@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -17,7 +17,10 @@ import { PosOperationsService } from '../../../services/pos-operations.service';
   templateUrl: './daily-z-report.component.html',
   styleUrl: './daily-z-report.component.css',
 })
-export class DailyZReportComponent implements OnInit {
+export class DailyZReportComponent implements OnInit, OnChanges {
+  // Permite abrir el modal Z ya centrado en una fecha concreta (p.ej. desde vista de turnos).
+  @Input() presetDate: string | null = null;
+
   // La fecha seleccionada arranca con el día de hoy en formato ISO (YYYY-MM-DD)
   selectedDate = this.getTodayIso();
   report: DailyZReportResponse | null = null;
@@ -29,6 +32,19 @@ export class DailyZReportComponent implements OnInit {
   ngOnInit(): void {
     // Cargamos el reporte del día al abrir el modal
     this.loadReport();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const dateChange = changes['presetDate'];
+    if (!dateChange || !dateChange.currentValue) {
+      return;
+    }
+
+    const requestedDate = String(dateChange.currentValue);
+    if (requestedDate !== this.selectedDate) {
+      this.selectedDate = requestedDate;
+      this.loadReport();
+    }
   }
 
   /** Solicita el reporte Z al backend para la fecha seleccionada en el selector. */

@@ -68,7 +68,7 @@
 
 .theme-option--active {
   border-color: var(--secondary-color);
-  background: color-mix(in srgb, var(--secondary-color) 10%, #ffffff 90%);
+  background: color-mix(in srgb, var(--secondary-color) 10%, var(--white) 90%);
   box-shadow: var(--shadow);
 }
 

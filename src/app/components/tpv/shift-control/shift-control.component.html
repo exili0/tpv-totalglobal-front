@@ -1,11 +1,16 @@
 <section class="shift-panel">
   <h3>Turno de caja</h3>
+  <p class="shift-subtitle">Control de apertura y cierre operativo</p>
 
   <div class="shift-state" [class.shift-state-open]="isShiftOpen" [class.shift-state-closed]="!isShiftOpen">
     <p><strong>Estado:</strong> {{ isShiftOpen ? 'Abierto' : 'Cerrado' }}</p>
     <p *ngIf="isShiftOpen"><strong>Abierto por:</strong> {{ openedByLabel }}</p>
     <p *ngIf="isShiftOpen"><strong>Hora apertura:</strong> {{ openedAtLabel }}</p>
   </div>
+
+  <p *ngIf="!isAdmin" class="msg-warning">
+    Solo el perfil administrador puede abrir turno.
+  </p>
 
   <p *ngIf="isShiftOpen && pendingServices.length > 0" class="msg-warning">
     No puedes cerrar caja hasta cobrar: {{ pendingServices.join(', ') }}
@@ -24,11 +29,25 @@
   </div>
 
   <div class="actions-row">
-    <button type="button" class="btn-open" (click)="openShift()" [disabled]="isLoading || isRefreshing || isShiftOpen">Abrir turno</button>
-    <button type="button" class="btn-close" (click)="closeShift()" [disabled]="isLoading || isRefreshing || !isShiftOpen || pendingServices.length > 0">Cerrar turno</button>
+    <button type="button" class="btn-open" (click)="openShift()" [disabled]="isLoading || isRefreshing || isShiftOpen || !isAdmin">Abrir turno</button>
+    <button type="button" class="btn-close" (click)="openCloseOptions()" [disabled]="isLoading || isRefreshing || !isShiftOpen || pendingServices.length > 0">Cerrar turno</button>
   </div>
 
   <p *ngIf="isRefreshing" class="msg-muted">Actualizando estado...</p>
   <p *ngIf="successMessage" class="msg-ok">{{ successMessage }}</p>
   <p *ngIf="errorMessage" class="msg-error">{{ errorMessage }}</p>
 </section>
+
+<div class="close-options-backdrop" *ngIf="showCloseOptions" (click)="closeOptionsModal()">
+  <section class="close-options-modal" (click)="$event.stopPropagation()">
+    <h4>Cerrar turno</h4>
+    <p>Elige cómo quieres finalizar la caja de este turno.</p>
+
+    <div class="close-options-actions">
+      <button type="button" class="btn-option btn-option-secondary" (click)="closeShift(false)">Cerrar turno</button>
+      <button type="button" class="btn-option btn-option-primary" (click)="closeShift(true)">Cerrar + reporte Z diario</button>
+    </div>
+
+    <button type="button" class="btn-cancel-inline" (click)="closeOptionsModal()">Cancelar</button>
+  </section>
+</div>

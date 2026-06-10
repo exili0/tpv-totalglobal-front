@@ -4,8 +4,53 @@
   <main class="tables-page">
     <header class="tables-header">
       <h1>Selecciona una mesa</h1>
-      <button type="button" class="btn-refresh" (click)="loadTables()" [disabled]="isLoading">Actualizar</button>
+      <div class="header-actions">
+        <button type="button" class="btn-refresh" (click)="loadTables()" [disabled]="isLoading">Actualizar</button>
+        <button type="button" class="btn-refresh" (click)="toggleMoveMode()" [disabled]="isLoading || !isCashShiftOpen()">
+          {{ isMoveMode ? 'Cancelar mover mesa' : 'Mover mesa' }}
+        </button>
+        <!-- Botón gestión de mesas: solo visible para ADMIN -->
+        <button
+          *ngIf="isAdmin"
+          type="button"
+          class="btn-table-manage"
+          (click)="toggleTableManage()"
+          title="Gestión de mesas (ADMIN)"
+          aria-label="Abrir gestión de mesas"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor">
+            <path d="m240-160 60-150q9-23 29-36.5t45-13.5h66v-161q-153-5-256.5-45T80-660q0-58 117-99t283-41q167 0 283.5 41T880-660q0 54-103.5 94T520-521v161h66q24 0 44.5 13.5T660-310l60 150h-80l-48-120H368l-48 120h-80Zm240-440q97 0 183-17t126-43q-40-26-126-43t-183-17q-97 0-183 17t-126 43q40 26 126 43t183 17Zm0-60Z"/>
+          </svg>
+        </button>
+      </div>
     </header>
+
+    <!-- Modal: gestión rápida de mesas (ADMIN) -->
+    <div class="table-manage-backdrop" *ngIf="isTableManageOpen" (click)="toggleTableManage()">
+      <section class="table-manage-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Gestión de mesas">
+        <header class="table-manage-header">
+          <h3>Gestión de mesas</h3>
+          <button type="button" class="btn-modal-close" (click)="toggleTableManage()" aria-label="Cerrar">✕</button>
+        </header>
+        <div class="table-manage-form">
+          <label for="new-table-number">Número de mesa</label>
+          <input id="new-table-number" type="number" min="1" placeholder="Ej. 5" [(ngModel)]="newTableNumber">
+          <label for="new-table-name">Nombre visible <span class="label-opt">(opcional)</span></label>
+          <input id="new-table-name" type="text" placeholder="Ej. Terraza 5" [(ngModel)]="newTableName">
+          <button type="button" class="btn-add-table" (click)="createTable()">Añadir mesa</button>
+        </div>
+      </section>
+    </div>
+
+    <section *ngIf="isMoveMode" class="move-controls">
+      <label for="move-source-table">Mesa origen:</label>
+      <select id="move-source-table" [(ngModel)]="selectedSourceTableNumber">
+        <option *ngFor="let source of movableSourceTables" [ngValue]="source.tableNumber">
+          Mesa {{ source.tableNumber }} - {{ getTableDisplayName(source) }}
+        </option>
+      </select>
+      <span class="move-help">Haz click en la mesa destino libre para completar el movimiento.</span>
+    </section>
 
     <p *ngIf="!isLoading && isCashShiftOpen()" class="shift-message shift-message-open">
       Caja abierta por {{ currentShift?.openedBy || 'usuario no informado' }}
@@ -16,6 +61,7 @@
     </p>
 
     <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <p *ngIf="infoMessage" class="info-message">{{ infoMessage }}</p>
 
     <section *ngIf="!isLoading" class="tables-grid">
       <button
@@ -29,10 +75,26 @@
         *ngFor="let table of tables"
         (click)="openTable(table)"
       >
+        <!-- Botón eliminar: icono basura, esquina superior derecha. Solo ADMIN, no en mesa 0, no si está ocupada -->
+        <span
+          class="btn-delete-table"
+          *ngIf="isAdmin && table.tableNumber !== 0 && !isTableOccupied(table)"
+          (click)="deleteTable(table, $event)"
+          title="Eliminar mesa"
+          role="button"
+          [attr.aria-label]="'Eliminar mesa ' + table.tableNumber"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+          </svg>
+        </span>
         <span class="table-number">{{ table.tableNumber }}</span>
         <span class="table-name">{{ getTableDisplayName(table) }}</span>
         <span class="table-indicator" *ngIf="isTableOccupied(table)" aria-label="Mesa ocupada">
-          [Pendiente de cobro]
+          <ng-container *ngIf="getPendingAmount(table) !== null; else fallbackLabel">
+            {{ getPendingAmount(table) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          </ng-container>
+          <ng-template #fallbackLabel>Pendiente</ng-template>
         </span>
         <span
           class="table-status"

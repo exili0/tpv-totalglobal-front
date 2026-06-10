@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
@@ -16,7 +17,7 @@ import { AuditService } from '../../../services/audit.service';
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.css',
 })
@@ -31,6 +32,9 @@ export class ProductFormComponent implements OnInit {
   error: string | null = null;
   isEditMode = false;
   categories: Category[] = [];
+  showCostCalculator = false;
+  packageUnits = 1;
+  packagePrice = 0;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -44,6 +48,7 @@ export class ProductFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0.01)]],
+      costPrice: [0, [Validators.min(0)]],
       vatPercent: [21, [Validators.required, Validators.min(0), Validators.max(100)]],
       barcode: [''],
       imageUrl: [''],
@@ -62,6 +67,7 @@ export class ProductFormComponent implements OnInit {
         name: this.product.name,
         description: this.product.description,
         price: this.product.price,
+        costPrice: this.product.costPrice ?? 0,
         vatPercent: this.product.vatPercent,
         barcode: this.product.barcode,
         imageUrl: this.product.imageUrl,
@@ -122,5 +128,32 @@ export class ProductFormComponent implements OnInit {
 
   cancel(): void {
     this.formClosed.emit();
+  }
+
+  openCostCalculator(): void {
+    this.showCostCalculator = true;
+    this.packageUnits = 1;
+    this.packagePrice = 0;
+  }
+
+  closeCostCalculator(): void {
+    this.showCostCalculator = false;
+  }
+
+  get calculatedUnitCost(): number {
+    if (!Number.isFinite(this.packageUnits) || this.packageUnits <= 0) {
+      return 0;
+    }
+
+    if (!Number.isFinite(this.packagePrice) || this.packagePrice < 0) {
+      return 0;
+    }
+
+    return Number((this.packagePrice / this.packageUnits).toFixed(4));
+  }
+
+  applyUnitCost(): void {
+    this.form.patchValue({ costPrice: this.calculatedUnitCost });
+    this.closeCostCalculator();
   }
 }

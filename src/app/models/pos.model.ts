@@ -35,6 +35,13 @@ export interface CreateOrderRequest {
   operatorSessionToken?: string;
 }
 
+/** Payload para mover una comanda abierta de una mesa origen a una mesa destino. */
+export interface MoveTableRequest {
+  fromTableNumber: number;
+  toTableNumber: number;
+  sessionToken: string;
+}
+
 /** Línea de venta ya calculada por backend. */
 export interface SaleOrderLine {
   id: number;
@@ -193,6 +200,7 @@ export interface ShiftProductSale {
   quantitySold: number;
   totalSales: number;
   totalProfit: number;
+  stockAtOpen: number | null;
   stockAtClose: number | null;
 }
 

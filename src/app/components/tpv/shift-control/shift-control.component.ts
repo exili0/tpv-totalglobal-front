@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -20,10 +20,13 @@ import { CashRegisterShift, SaleOrder } from '../../../models/pos.model';
   styleUrl: './shift-control.component.css',
 })
 export class ShiftControlComponent {
+  @Output() zReportRequested = new EventEmitter<string>();
+
   // Fondo inicial en efectivo al abrir turno
   openingFloat = 0;
   isLoading = false;
   isRefreshing = false;
+  showCloseOptions = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
   currentShift: CashRegisterShift | null = null;
@@ -36,8 +39,17 @@ export class ShiftControlComponent {
     this.refreshOperationalState();
   }
 
+  get isAdmin(): boolean {
+    return this.authService.getUserRole() === 'ADMIN';
+  }
+
   /** Abre un nuevo turno de caja con el fondo de apertura indicado. */
   openShift(): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Solo un administrador puede abrir turno de caja';
+      return;
+    }
+
     if (this.isShiftOpen) {
       this.errorMessage = 'Ya hay un turno de caja abierto';
       return;
@@ -66,7 +78,7 @@ export class ShiftControlComponent {
   }
 
   /** Cierra el turno de caja activo y registra quién lo ha cerrado. */
-  closeShift(): void {
+  openCloseOptions(): void {
     if (!this.isShiftOpen) {
       this.errorMessage = 'No hay un turno de caja abierto';
       return;
@@ -78,6 +90,26 @@ export class ShiftControlComponent {
     }
 
     this.clearMessages();
+    this.showCloseOptions = true;
+  }
+
+  closeOptionsModal(): void {
+    this.showCloseOptions = false;
+  }
+
+  closeShift(closeWithZReport: boolean): void {
+    if (!this.isShiftOpen) {
+      this.errorMessage = 'No hay un turno de caja abierto';
+      return;
+    }
+
+    if (this.pendingServices.length > 0) {
+      this.errorMessage = `No se puede cerrar la caja: hay servicios sin pagar (${this.pendingServices.join(', ')})`;
+      return;
+    }
+
+    this.clearMessages();
+    this.showCloseOptions = false;
     this.isLoading = true;
 
     this.posOperationsService
@@ -86,10 +118,13 @@ export class ShiftControlComponent {
       })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: () => {
+        next: (closedShift) => {
           this.currentShift = null;
           this.pendingServices = [];
           this.successMessage = 'Turno cerrado correctamente';
+          if (closeWithZReport) {
+            this.zReportRequested.emit(this.toIsoDate(closedShift?.closedAt ?? new Date().toISOString()));
+          }
           this.refreshOperationalState();
         },
         error: (error: unknown) => {
@@ -163,7 +198,7 @@ export class ShiftControlComponent {
     this.errorMessage = null;
   }
 
-  /** Normaliza cualquier fecha de entrada al formato dd,MM,yyyy. */
+  /** Normaliza cualquier fecha de entrada al formato dd,MM,yyyy HH:mm. */
   private formatDateAsDdMmYyyy(value: string): string {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -173,7 +208,17 @@ export class ShiftControlComponent {
     const day = `${date.getDate()}`.padStart(2, '0');
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const year = date.getFullYear();
-    return `${day},${month},${year}`;
+    const hours = `${date.getHours()}`.padStart(2, '0');
+    const minutes = `${date.getMinutes()}`.padStart(2, '0');
+    return `${day},${month},${year} ${hours}:${minutes}`;
+  }
+
+  private toIsoDate(value: string): string {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return new Date().toISOString().split('T')[0];
+    }
+    return parsed.toISOString().split('T')[0];
   }
 
   /** Extrae el texto del error del backend o devuelve un mensaje de respaldo. */

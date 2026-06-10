@@ -1,23 +1,29 @@
 .z-panel {
-  background-color: var(--sidebar-bg);
-  border: var(--border-primary);
-  border-radius: 10px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--white) 94%, var(--secondary-soft) 6%), var(--white));
+  border: 1px solid color-mix(in srgb, var(--border-color) 74%, var(--secondary-color) 26%);
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 14px;
 }
 
 .z-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .z-header h3 {
   margin: 0;
   color: var(--primary-color);
-  font-size: 15px;
+  font-size: 18px;
+}
+
+.z-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-light);
 }
 
 .date-actions {
@@ -28,16 +34,16 @@
 
 .date-actions input {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 7px 8px;
+  border-radius: 10px;
+  padding: 8px 10px;
   background-color: var(--white);
 }
 
 .date-actions button {
   margin: 0;
-  min-height: 34px;
-  padding: 7px 10px;
-  border-radius: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 10px;
   color: var(--white);
   font-weight: 700;
 }
@@ -45,17 +51,17 @@
 .z-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
 }
 
 .z-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 6px;
+  gap: 4px;
+  padding: 10px;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  background-color: var(--white);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--white) 88%, var(--secondary-soft) 12%);
 }
 
 .z-item span {
@@ -65,10 +71,29 @@
 
 .z-item strong {
   color: var(--text-dark);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .msg-error {
   margin: 0 0 8px;
   color: var(--danger-color);
+}
+
+@media (max-width: 640px) {
+  .z-header {
+    flex-direction: column;
+  }
+
+  .date-actions {
+    width: 100%;
+  }
+
+  .date-actions input,
+  .date-actions button {
+    flex: 1;
+  }
+
+  .z-grid {
+    grid-template-columns: 1fr;
+  }
 }

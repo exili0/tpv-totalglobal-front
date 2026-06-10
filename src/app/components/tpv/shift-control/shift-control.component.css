@@ -1,21 +1,27 @@
 .shift-panel {
-  background-color: var(--sidebar-bg);
-  border: var(--border-primary);
-  border-radius: 10px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--white) 94%, var(--secondary-soft) 6%), var(--white));
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--secondary-color) 30%);
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 14px;
 }
 
 .shift-panel h3 {
-  margin: 0 0 8px 0;
+  margin: 0;
   color: var(--primary-color);
-  font-size: 15px;
+  font-size: 18px;
+}
+
+.shift-subtitle {
+  margin: 3px 0 10px;
+  color: var(--text-light);
+  font-size: 12px;
 }
 
 .shift-state {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 10px;
+  padding: 10px;
   margin-bottom: 10px;
   background-color: var(--white);
 }
@@ -64,13 +70,13 @@
 .actions-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-open,
 .btn-close {
-  min-height: 36px;
-  border-radius: 8px;
+  min-height: 40px;
+  border-radius: 10px;
   font-weight: 700;
   color: var(--white);
 }
@@ -105,4 +111,67 @@
 
 .msg-muted {
   color: var(--text-light);
+}
+
+.close-options-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  display: grid;
+  place-items: center;
+  z-index: 120;
+  padding: 16px;
+}
+
+.close-options-modal {
+  width: min(420px, 94vw);
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-strong);
+  padding: 16px;
+}
+
+.close-options-modal h4 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 19px;
+}
+
+.close-options-modal p {
+  margin: 8px 0 0;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.close-options-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.btn-option {
+  min-height: 42px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.btn-option-primary {
+  background: linear-gradient(135deg, var(--secondary-color), var(--success-color));
+}
+
+.btn-option-secondary {
+  background: var(--warning-color);
+}
+
+.btn-cancel-inline {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 38px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  background: var(--white);
 }

@@ -20,7 +20,7 @@
       <!--------------------------------------------->
     <div class="form-row">
       <div class="form-group">
-        <label for="price">Precio *</label>
+        <label for="price">Precio final (IVA incluido) *</label>
         <input id="price" type="number" formControlName="price" placeholder="0.00" step="0.01" min="0">
         <small *ngIf="form.get('price')?.invalid && form.get('price')?.touched" class="error">
           Precio requerido y mayor a 0
@@ -28,11 +28,25 @@
       </div>
 
       <div class="form-group">
-        <label for="vatPercent">IVA % *</label>
+        <label for="vatPercent">Tipo IVA % (opcional avanzado)</label>
         <input id="vatPercent" type="number" formControlName="vatPercent" placeholder="21" min="0" max="100">
+        <small class="hint">El TPV cobra siempre el precio final. Este campo solo se usa para desglose interno.</small>
         <small *ngIf="form.get('vatPercent')?.invalid && form.get('vatPercent')?.touched" class="error">
           IVA entre 0-100
         </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="costPrice" class="label-with-action">
+          <span>Coste unitario proveedor</span>
+          <button type="button" class="btn-cost-calc" (click)="openCostCalculator()" title="Calculadora coste unitario" aria-label="Abrir calculadora de coste unitario">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M320-240h60v-80h80v-60h-80v-80h-60v80h-80v60h80v80Zm200-30h200v-60H520v60Zm0-100h200v-60H520v60Zm44-152 56-56 56 56 42-42-56-58 56-56-42-42-56 56-56-56-42 42 56 56-56 58 42 42Zm-314-70h200v-60H250v60Zm-50 472q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/></svg>
+          </button>
+        </label>
+        <input id="costPrice" type="number" formControlName="costPrice" placeholder="0.00" step="0.0001" min="0">
+        <small class="hint">Este valor se usa para calcular la ganancia real del turno.</small>
       </div>
     </div>
       <!--------------------------------------------->
@@ -78,4 +92,33 @@
       </button>
     </div>
   </form>
+</div>
+
+<div class="calc-backdrop" *ngIf="showCostCalculator" (click)="closeCostCalculator()">
+  <section class="calc-modal" (click)="$event.stopPropagation()">
+    <h4>Calculadora de coste unitario</h4>
+    <p>Calcula rápido el coste por unidad a partir del precio del paquete.</p>
+
+    <div class="calc-grid">
+      <label>
+        Unidades por paquete
+        <input type="number" min="1" step="1" [(ngModel)]="packageUnits">
+      </label>
+
+      <label>
+        Precio total del paquete (EUR)
+        <input type="number" min="0" step="0.01" [(ngModel)]="packagePrice">
+      </label>
+    </div>
+
+    <div class="calc-result">
+      <span>Coste por unidad</span>
+      <strong>{{ calculatedUnitCost | number:'1.4-4' }} EUR</strong>
+    </div>
+
+    <div class="calc-actions">
+      <button type="button" class="btn-cancel" (click)="closeCostCalculator()">Cancelar</button>
+      <button type="button" class="btn-submit" (click)="applyUnitCost()">Usar este coste</button>
+    </div>
+  </section>
 </div>

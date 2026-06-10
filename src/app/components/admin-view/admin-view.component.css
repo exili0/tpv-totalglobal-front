@@ -29,8 +29,8 @@
     padding: 0.85rem 1.8rem;
     font-size: 1rem;
     font-weight: 600;
-    color: #fff;
-    background-color: #3a3a3a;
+    color: var(--white);
+    background-color: var(--secondary-color);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -38,7 +38,7 @@
 }
 
 .menu-btn:hover {
-    background-color: #555;
+    background-color: var(--secondary-dark);
     transform: translateY(-2px);
 }
 

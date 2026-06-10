@@ -23,6 +23,17 @@ export class CategoryColorAccessibilityService {
   };
 
   /**
+   * Nota de arquitectura del motor cromático:
+   * - No toca el DOM ni estilos inline globales.
+   * - Solo devuelve un color final para botones de categoría.
+   * - El resto de la app depende de variables CSS de tema.
+   *
+   * Esto separa responsabilidades:
+   * - Servicio de tema: estado global del filtro (data-theme)
+   * - Servicio de categorías: remapeo puntual de colores dinámicos de negocio
+   */
+
+  /**
    * Convierte un color original a un color de visualización accesible.
    * Mantiene contraste percibido y distribuye tonos por índice
    *

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export type AccessibilityTheme =
   | 'default'
@@ -18,6 +19,27 @@ export class AccessibilityThemeService {
   private readonly storageKey = 'tpv_accessibility_theme';
 
   /**
+   * Subject interno que emite cada vez que el tema cambia.
+   * Usado por componentes (como el navbar) que necesitan reaccionar en tiempo real.
+   */
+  private readonly themeSubject = new BehaviorSubject<AccessibilityTheme>('default');
+
+  /** Observable público del tema activo. */
+  readonly currentTheme$: Observable<AccessibilityTheme> = this.themeSubject.asObservable();
+
+  /**
+   * Motor visual global de daltonismo.
+   *
+   * Flujo completo:
+   * 1) Persistencia: guarda preferencia en localStorage
+   * 2) Activación: aplica data-theme en <html>
+   * 3) Render: CSS variables de :root[data-theme=...] recalculan colores
+   *
+   * Importante: cualquier componente que use variables CSS (en lugar de
+   * colores hardcodeados) queda automáticamente cubierto por el filtro.
+   */
+
+  /**
    * Inicialización temprana del tema.
    * Esta llamada se realiza al arrancar la app para minimizar "parpadeos"
    * visuales entre el tema por defecto y el tema accesible guardado.
@@ -26,7 +48,6 @@ export class AccessibilityThemeService {
     const savedTheme = this.getSavedTheme();
     this.applyTheme(savedTheme);
   }
-
   /**
    * Persiste y aplica el tema seleccionado por la persona usuaria.
    *
@@ -40,7 +61,6 @@ export class AccessibilityThemeService {
     localStorage.setItem(this.storageKey, theme);
     this.applyTheme(theme);
   }
-
   /**
    * Recupera tema guardado con validación defensiva.
    *
@@ -73,7 +93,11 @@ export class AccessibilityThemeService {
    *   herede automáticamente la configuración de daltonismo.
    */
   private applyTheme(theme: AccessibilityTheme): void {
+    // Punto único de verdad para el tema activo.
+    // Todos los estilos del sistema se encadenan desde este atributo.
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
+    // Notifica a los suscriptores del cambio de tema (p.ej. navbar badge).
+    this.themeSubject.next(theme);
   }
 }

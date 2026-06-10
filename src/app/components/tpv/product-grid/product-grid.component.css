@@ -192,7 +192,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #000000 !important;
+  color: var(--text-dark) !important;
   line-height: 0;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -211,9 +211,9 @@
 
 .btn-toggle-details svg,
 .btn-toggle-details svg path {
-  fill: #000000 !important;
-  stroke: #000000 !important;
-  color: #000000 !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  color: currentColor !important;
 }
 
 .btn-toggle-details svg {

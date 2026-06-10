@@ -53,13 +53,13 @@
             <tr>
               <th>Ticket</th>
               <th>Servicio</th>
-              <th>Hora cobro</th>
+              <th>Fecha y hora cobro</th>
               <th>Importe</th>
               <th>Cantidad</th>
               <th>Método</th>
               <th>Cobrado por</th>
               <th>Propina</th>
-              <th>Pendiente</th>
+              <th>Estado devolución</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -68,13 +68,13 @@
             <tr *ngFor="let ticket of tickets">
               <td>#{{ ticket.paymentId }}</td>
               <td>{{ ticket.serviceLabel }}</td>
-              <td>{{ ticket.paidAt | date:'dd,MM,yyyy' }}</td>
+              <td>{{ ticket.paidAt | date:'dd/MM/yyyy HH:mm' }}</td>
               <td>{{ ticket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
               <td>{{ ticket.totalItems }}</td>
               <td>{{ getPaymentMethodLabel(ticket.paymentMethod) }}</td>
               <td>{{ getCollectorLabel(ticket.collectedBy) }}</td>
               <td>{{ (ticket.tipAmount ?? 0) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
-              <td>{{ ticket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+              <td>{{ getRefundStatusLabel(ticket) }}</td>
               <td>
                 <div class="actions-cell">
                   <button
@@ -86,7 +86,7 @@
                     title="Descargar ticket"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" aria-hidden="true">
-                      <path fill="#000000" d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                      <path fill="currentColor" d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                     </svg>
                     <span class="sr-only">Descargar ticket</span>
                   </button>
@@ -100,7 +100,7 @@
                     title="Ver ticket"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" aria-hidden="true">
-                      <path fill="#000000" d="M120-80v-800l60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60v800l-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60Zm120-200h480v-80H240v80Zm0-160h480v-80H240v80Zm0-160h480v-80H240v80Zm-40 404h560v-568H200v568Zm0-568v568-568Z"/>
+                      <path fill="currentColor" d="M120-80v-800l60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60v800l-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60-60-60-60 60Zm120-200h480v-80H240v80Zm0-160h480v-80H240v80Zm0-160h480v-80H240v80Zm-40 404h560v-568H200v568Zm0-568v568-568Z"/>
                     </svg>
                     <span class="sr-only">Ver ticket</span>
                   </button>
@@ -114,7 +114,7 @@
                     title="Iniciar devolución"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" aria-hidden="true">
-                      <path fill="#000000" d="M480-520q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM200-400q-33 0-56.5-23.5T120-480v-320q0-33 23.5-56.5T200-880h560q33 0 56.5 23.5T840-800v320q0 33-23.5 56.5T760-400H200Zm80-80h400q0-33 23.5-56.5T760-560v-160q-33 0-56.5-23.5T680-800H280q0 33-23.5 56.5T200-720v160q33 0 56.5 23.5T280-480Zm-80 0v-320 320ZM480-80l160-160-56-56-64 64v-128h-80v128l-64-64-56 56L480-80Z"/>
+                      <path fill="currentColor" d="M480-520q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM200-400q-33 0-56.5-23.5T120-480v-320q0-33 23.5-56.5T200-880h560q33 0 56.5 23.5T840-800v320q0 33-23.5 56.5T760-400H200Zm80-80h400q0-33 23.5-56.5T760-560v-160q-33 0-56.5-23.5T680-800H280q0 33-23.5 56.5T200-720v160q33 0 56.5 23.5T280-480Zm-80 0v-320 320ZM480-80l160-160-56-56-64 64v-128h-80v128l-64-64-56 56L480-80Z"/>
                     </svg>
                     <span class="sr-only">Iniciar devolución</span>
                   </button>
@@ -137,7 +137,7 @@
       <div class="ticket-meta">
         <p><strong>Ticket:</strong> #{{ selectedTicket.paymentId }}</p>
         <p><strong>Servicio:</strong> {{ selectedTicket.serviceLabel }}</p>
-        <p><strong>Fecha cobro:</strong> {{ selectedTicket.paidAt | date:'dd,MM,yyyy' }}</p>
+        <p><strong>Fecha cobro:</strong> {{ selectedTicket.paidAt | date:'dd/MM/yyyy HH:mm' }}</p>
         <p><strong>Cobrado por:</strong> {{ getCollectorLabel(selectedTicket.collectedBy) }}</p>
         <p><strong>Importe total:</strong> {{ selectedTicket.totalAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
         <p><strong>Propina:</strong> {{ (selectedTicket.tipAmount ?? 0) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
@@ -150,7 +150,7 @@
               <th>Producto</th>
               <th>Cantidad</th>
               <th>Devuelta</th>
-              <th>Pendiente</th>
+              <th>Pendiente devolución</th>
               <th>Precio unit.</th>
               <th>Total línea</th>
             </tr>
@@ -170,7 +170,7 @@
 
       <div class="refund-box">
         <p><strong>Ya devuelto:</strong> {{ selectedTicket.refundedAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
-        <p><strong>Pendiente:</strong> {{ selectedTicket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
+        <p><strong>Pendiente devolución:</strong> {{ selectedTicket.refundableAmount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</p>
 
         <div *ngIf="modalMode === 'VIEW'" class="view-actions">
           <button
@@ -222,7 +222,7 @@
             <select id="refundLine" [(ngModel)]="selectedLineId" (ngModelChange)="onSelectedLineChange()" [disabled]="isRefunding">
               <option [ngValue]="null" disabled>Selecciona producto</option>
               <option *ngFor="let line of selectedTicket.lines" [ngValue]="line.lineId" [disabled]="line.refundableQuantity <= 0">
-                {{ line.productName }} (pendiente: {{ line.refundableQuantity }})
+                {{ line.productName }} (por devolver: {{ line.refundableQuantity }})
               </option>
             </select>
 

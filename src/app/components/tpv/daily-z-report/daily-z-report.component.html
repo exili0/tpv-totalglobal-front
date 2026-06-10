@@ -1,6 +1,9 @@
 <section class="z-panel">
   <div class="z-header">
-    <h3>Reporte Z</h3>
+    <div>
+      <h3>Reporte Z</h3>
+      <p class="z-subtitle">Resumen diario de caja y ventas</p>
+    </div>
     <div class="date-actions">
       <input type="date" [(ngModel)]="selectedDate" [disabled]="isLoading">
       <button type="button" (click)="loadReport()" [disabled]="isLoading">Actualizar</button>
@@ -12,7 +15,6 @@
   <div *ngIf="report" class="z-grid">
     <div class="z-item"><span>Tickets</span><strong>{{ report.ticketsCount }}</strong></div>
     <div class="z-item"><span>Ventas</span><strong>{{ report.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong></div>
-    <div class="z-item"><span>IVA</span><strong>{{ report.totalVat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong></div>
     <div class="z-item"><span>Coste</span><strong>{{ report.totalCost | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong></div>
     <div class="z-item"><span>Beneficio</span><strong>{{ report.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong></div>
     <div class="z-item"><span>Efectivo</span><strong>{{ report.cashSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong></div>

@@ -27,6 +27,26 @@
   color: var(--primary-color);
 }
 
+.label-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-cost-calc {
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--primary-color) 10%, var(--white) 90%);
+  color: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -60,6 +80,12 @@
 
 .error {
   color: var(--danger-color);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.hint {
+  color: var(--text-light);
   font-size: 12px;
   margin-top: 4px;
 }
@@ -116,8 +142,86 @@
   background-color: var(--border-color);
 }
 
+.calc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  display: grid;
+  place-items: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.calc-modal {
+  width: min(460px, 94vw);
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-strong);
+  padding: 16px;
+}
+
+.calc-modal h4 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.calc-modal p {
+  margin: 6px 0 12px;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.calc-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dark);
+}
+
+.calc-grid input {
+  min-height: 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.calc-result {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--success-color) 10%, var(--white) 90%);
+}
+
+.calc-result strong {
+  color: var(--success-dark);
+}
+
+.calc-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .calc-grid {
     grid-template-columns: 1fr;
   }
 }

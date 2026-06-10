@@ -45,6 +45,7 @@
         <tr>
           <th>Producto</th>
           <th>Cantidad vendida</th>
+          <th>Stock al inicio</th>
           <th>Stock al cierre</th>
           <th>Ventas</th>
           <th>Ganancia</th>
@@ -52,11 +53,12 @@
       </thead>
       <tbody>
         <tr *ngIf="detail.soldProducts.length === 0">
-          <td colspan="5" class="empty-row">No hay productos vendidos en este turno.</td>
+          <td colspan="6" class="empty-row">No hay productos vendidos en este turno.</td>
         </tr>
         <tr *ngFor="let item of detail.soldProducts">
           <td>{{ item.productName }}</td>
           <td>{{ item.quantitySold }}</td>
+          <td>{{ item.stockAtOpen ?? 'No aplica' }}</td>
           <td>{{ item.stockAtClose ?? 'No aplica' }}</td>
           <td>{{ item.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td class="profit-cell">{{ item.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>

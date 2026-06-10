@@ -5,6 +5,7 @@ import {
   CashRegisterShift,
   CloseShiftRequest,
   CreateOrderRequest,
+  MoveTableRequest,
   DailyZReportResponse,
   OpenShiftRequest,
   Payment,
@@ -51,6 +52,11 @@ export class PosOperationsService {
     return this.http.get<SaleOrder[]>(`${this.apiUrl}/orders/open`);
   }
 
+  /** Mueve una comanda abierta desde una mesa origen a una mesa destino. */
+  moveOpenOrderBetweenTables(request: MoveTableRequest): Observable<SaleOrder> {
+    return this.http.post<SaleOrder>(`${this.apiUrl}/orders/move-table`, request);
+  }
+
   /** Registra el cobro final de una orden. */
   registerPayment(request: PaymentRequest): Observable<Payment> {
     // Al pagar, backend cambia estado de orden y actualiza acumulados de turno.
@@ -59,13 +65,11 @@ export class PosOperationsService {
 
   /**
    * Limpia pedido abierto de una mesa.
-   * Envía usuario/token/rol para que backend valide bloqueo de sesión.
+   * Envía token de sesión operativo; identidad y rol vienen del JWT.
    */
-  clearOpenOrder(tableNumber: number, username: string, sessionToken: string): Observable<void> {
-    // En borrado enviamos contexto de sesión para que backend valide
-    // que quien limpia la orden tiene permiso real sobre la mesa.
-    const role = sessionStorage.getItem('userRole') ?? '';
-    const params = new HttpParams().set('username', username).set('sessionToken', sessionToken).set('role', role);
+  clearOpenOrder(tableNumber: number, sessionToken: string): Observable<void> {
+    // El backend obtiene operador/rol del JWT; aquí solo enviamos token de sesión de mesa.
+    const params = new HttpParams().set('sessionToken', sessionToken);
     return this.http.delete<void>(`${this.apiUrl}/orders/${tableNumber}`, { params });
   }
 

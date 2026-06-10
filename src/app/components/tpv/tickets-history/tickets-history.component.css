@@ -24,7 +24,7 @@
   margin-top: 0 !important;
   display: inline-flex !important;
   align-items: center;
-  color: var(--text-color, #1b1a1a);
+  color: var(--text-color);
 }
 
 .btn-back {
@@ -103,7 +103,7 @@
 
 .btn-refund-action,
 .btn-refund-start {
-  background: var(--success-color, #3a8f1b);
+  background: var(--success-color);
   color: var(--white);
 }
 
@@ -118,8 +118,8 @@
   height: 40px;
   border-radius: 10px;
   border: 1px solid var(--border-color);
-  background: #ffffff;
-  color: #000000 !important;
+  background: var(--white);
+  color: var(--text-dark) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -152,7 +152,7 @@
 }
 
 .icon-action-btn svg path {
-  fill: #000000 !important;
+  fill: currentColor !important;
 }
 
 .sr-only {
@@ -180,7 +180,7 @@
 
 .msg-ok {
   margin: 0 0 10px;
-  color: var(--success-color, #1b8f3b);
+  color: var(--success-color);
 }
 
 .state-box {
@@ -232,7 +232,7 @@
 .tip-card-total {
   margin: 0;
   font-weight: 700;
-  color: var(--success-color, #1b8f3b);
+  color: var(--success-color);
 }
 
 .tip-card-count {
@@ -274,7 +274,7 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay-bg-strong);
   display: grid;
   place-items: center;
   padding: 20px;

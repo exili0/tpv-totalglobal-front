@@ -4,7 +4,7 @@
 }
 
 .modal-title {
-  color: #333;
+  color: var(--text-dark);
   margin-bottom: 20px;
   font-weight: 600;
 }
@@ -16,19 +16,19 @@
 .product-info {
   margin-bottom: 15px;
   padding: 15px;
-  background-color: #f5f5f5;
+  background-color: var(--surface-light);
   border-radius: 8px;
 }
 
 .product-info h3 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--text-dark);
   font-size: 16px;
 }
 
 .quantity-info {
   margin: 0;
-  color: #666;
+  color: var(--text-light);
   font-size: 14px;
 }
 
@@ -43,7 +43,7 @@
 .question {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dark);
   margin-bottom: 15px;
 }
 
@@ -56,7 +56,7 @@
 
 .option {
   padding: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   width: 100%;
@@ -65,22 +65,22 @@
 }
 
 .option:hover {
-  border-color: #1976d2;
-  background-color: #f9f9f9;
+  border-color: var(--primary-color);
+  background-color: var(--surface-light);
 }
 
 .option.selected {
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 18%, transparent);
 }
 
 .option-stock.selected {
-  border-color: #4caf50;
-  background-color: #f1f8f4;
+  border-color: var(--success-color);
+  background-color: color-mix(in srgb, var(--success-color) 10%, var(--white) 90%);
 }
 
 .option-waste.selected {
-  border-color: #f44336;
-  background-color: #fff3f1;
+  border-color: var(--danger-color);
+  background-color: color-mix(in srgb, var(--danger-color) 10%, var(--white) 90%);
 }
 
 .option-label,
@@ -104,12 +104,12 @@
 .text strong {
   display: block;
   margin-bottom: 4px;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .description {
   font-size: 12px;
-  color: #999;
+  color: var(--text-light);
   margin: 0;
 }
 
@@ -117,7 +117,7 @@
   width: 100%;
   margin-top: 15px;
   padding: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   resize: vertical;
   font: inherit;
@@ -128,19 +128,19 @@
   display: block;
   margin-top: 8px;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--text-dark);
   font-size: 13px;
   font-weight: 600;
 }
 
 .info-box {
   padding: 12px;
-  background-color: #e3f2fd;
-  border-left: 4px solid #1976d2;
+  background-color: color-mix(in srgb, var(--primary-color) 14%, var(--white) 86%);
+  border-left: 4px solid var(--primary-color);
   border-radius: 4px;
   margin-top: 15px;
   font-size: 13px;
-  color: #0d47a1;
+  color: var(--primary-hover);
 }
 
 .info-box p {
@@ -155,7 +155,7 @@
 }
 
 .btn-cancel {
-  color: #666;
+  color: var(--text-light);
 }
 
 .btn-stock:disabled {
@@ -169,11 +169,11 @@
 }
 
 .btn-stock:not(:disabled) {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--success-color);
+  color: var(--white);
 }
 
 .btn-waste:not(:disabled) {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--danger-color);
+  color: var(--white);
 }

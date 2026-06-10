@@ -24,7 +24,7 @@
   margin-top: 0 !important;
   display: inline-flex !important;
   align-items: center;
-  color: var(--text-color, #1b1a1a);
+  color: var(--text-color);
 }
 
 .btn-back {
@@ -207,20 +207,25 @@
 }
 
 .status-open {
-  background: color-mix(in srgb, var(--warning-color) 15%, #ffffff 85%);
+  background: color-mix(in srgb, var(--warning-color) 15%, var(--white) 85%);
   color: var(--warning-dark);
-  border-color: color-mix(in srgb, var(--warning-color) 40%, #ffffff 60%);
+  border-color: color-mix(in srgb, var(--warning-color) 40%, var(--white) 60%);
 }
 
 .status-closed {
-  background: color-mix(in srgb, var(--success-color) 15%, #ffffff 85%);
+  background: color-mix(in srgb, var(--success-color) 15%, var(--white) 85%);
   color: var(--success-dark);
-  border-color: color-mix(in srgb, var(--success-color) 40%, #ffffff 60%);
+  border-color: color-mix(in srgb, var(--success-color) 40%, var(--white) 60%);
 }
 
 .profit-cell {
   font-weight: 700;
   color: var(--success-dark);
+}
+
+.actions-cell {
+  display: grid;
+  gap: 6px;
 }
 
 .details-button {
@@ -235,7 +240,7 @@
 }
 
 .details-button:hover {
-  background: color-mix(in srgb, var(--primary-color) 12%, #ffffff 88%);
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--white) 88%);
 }
 
 @media (max-width: 980px) {

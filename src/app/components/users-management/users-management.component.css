@@ -478,7 +478,7 @@ h2 {
     margin-top: 0 !important;
     display: inline-flex !important;
     align-items: center;
-    color: var(--text-color, #1b1a1a);
+    color: var(--text-color);
 }
 
 .btn-back {

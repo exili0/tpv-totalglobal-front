@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CashRegisterShift } from '../../../models/pos.model';
+import { OperationalModalService } from '../../../services/operational-modal.service';
 import { PosOperationsService } from '../../../services/pos-operations.service';
 import { NavbarComponent } from '../../navbar/navbar.component';
 
@@ -34,6 +35,7 @@ export class ShiftProfitViewComponent implements OnInit {
 
   constructor(
     private readonly posOperationsService: PosOperationsService,
+    private readonly operationalModalService: OperationalModalService,
     private readonly router: Router
   ) {}
 
@@ -111,6 +113,11 @@ export class ShiftProfitViewComponent implements OnInit {
     this.router.navigate(['/admin/shift-details', shiftId]);
   }
 
+  openZReportForShift(shift: CashRegisterShift): void {
+    const baseDate = shift.closedAt ?? shift.openedAt;
+    this.operationalModalService.requestZReportForDate(this.toIsoDate(baseDate));
+  }
+
   /** Normaliza fecha textual a epoch ms para ordenar sin errores de parseo. */
   private asTime(value: string | null): number {
     if (!value) {
@@ -118,6 +125,19 @@ export class ShiftProfitViewComponent implements OnInit {
     }
     const parsed = Date.parse(value);
     return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private toIsoDate(value: string | null): string {
+    if (!value) {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    return parsed.toISOString().split('T')[0];
   }
 
   /** PRUEBA para el back(identifica si el endpoint no está implementado) */

@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { OperationalModalService } from '../../services/operational-modal.service';
+import { AccessibilityThemeService } from '../../services/accessibility-theme.service';
 import { ShiftControlComponent } from '../tpv/shift-control/shift-control.component';
 import { DailyZReportComponent } from '../tpv/daily-z-report/daily-z-report.component';
 
@@ -17,7 +20,7 @@ import { DailyZReportComponent } from '../tpv/daily-z-report/daily-z-report.comp
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   // Controla si el menú lateral está abierto (pasado desde el padre en algunos contextos)
   @Input() isMenuOpen = false;
   // Permite que el backdrop del menú sea transparente en ciertas vistas
@@ -26,15 +29,39 @@ export class NavbarComponent implements OnInit {
   isUserCardOpen = false;
   isShiftModalOpen = false;
   isZReportModalOpen = false;
+  zReportPresetDate: string | null = null;
   currentUserName = '';
   currentUserRole = '';
+  /** true cuando hay un tema de daltonismo activo (no 'default'). */
+  isAccessibilityThemeActive = false;
+  private modalRequestSubscription?: Subscription;
+  private themeSubscription?: Subscription;
 
-  constructor(private router: Router, private authService: AuthService) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private operationalModalService: OperationalModalService,
+    private accessibilityThemeService: AccessibilityThemeService
+  ) { }
 
   ngOnInit(): void {
     // Cargamos los datos del usuario autenticado para mostrarlos en la tarjeta de usuario
     this.currentUserName = this.authService.getCurrentUsername() || 'Usuario';
     this.currentUserRole = this.authService.getUserRole() || 'Rol';
+
+    this.modalRequestSubscription = this.operationalModalService.zReportRequests$.subscribe((dateIso) => {
+      this.openZReportModal(dateIso);
+    });
+
+    // Escucha cambios de tema para activar/desactivar el badge de accesibilidad.
+    this.themeSubscription = this.accessibilityThemeService.currentTheme$.subscribe((theme) => {
+      this.isAccessibilityThemeActive = theme !== 'default';
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.modalRequestSubscription?.unsubscribe();
+    this.themeSubscription?.unsubscribe();
   }
 
   toggleMenu(): void { this.isMenuOpen = !this.isMenuOpen; }
@@ -115,10 +142,15 @@ export class NavbarComponent implements OnInit {
   }
 
   /** Abre el modal del cierre Z diario y cierra el de turno si estaba abierto. */
-  openZReportModal(): void {
+  openZReportModal(dateIso?: string): void {
     this.closeMenu();
+    this.zReportPresetDate = dateIso ?? null;
     this.isZReportModalOpen = true;
     this.isShiftModalOpen = false;
+  }
+
+  openZAfterShiftClose(dateIso: string): void {
+    this.openZReportModal(dateIso);
   }
 
   goToRefunds(): void {
@@ -149,6 +181,7 @@ export class NavbarComponent implements OnInit {
 
     this.isShiftModalOpen = false;
     this.isZReportModalOpen = false;
+    this.zReportPresetDate = null;
   }
 
   /** Cierra sesión y redirige al login. */

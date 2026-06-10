@@ -68,7 +68,6 @@
             <tr>
               <th>Nombre</th>
               <th>Precio</th>
-              <th>IVA</th>
               <th>Stock</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -78,7 +77,6 @@
             <tr *ngFor="let product of products">
               <td>{{product.name}}</td>
               <td>{{product.price | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</td>
-              <td>{{product.vatPercent}}%</td>
               <td>{{product.stock ?? '-'}}</td>
               <td>
                 <span [class.active]="product.active" [class.inactive]="!product.active">

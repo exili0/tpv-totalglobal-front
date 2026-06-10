@@ -53,7 +53,7 @@
             <tr *ngFor="let refund of refunds">
               <td>#{{ refund.id }}</td>
               <td>#{{ refund.payment.id }}</td>
-              <td>{{ refund.refundedAt | date:'dd,MM,yyyy' }}</td>
+              <td>{{ refund.refundedAt | date:'dd,MM,yyyy HH:mm' }}</td>
               <td>{{ refund.refundedBy }}</td>
               <td>{{ refund.amount | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
               <td>{{ getLineTrace(refund) }}</td>

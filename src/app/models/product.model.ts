@@ -8,6 +8,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  costPrice?: number;
   vatPercent: number;
   barcode?: string;
   imageUrl?: string;
@@ -24,6 +25,7 @@ export interface ProductRequest {
   name: string;
   description: string;
   price: number;
+  costPrice?: number;
   vatPercent: number;
   barcode?: string;
   imageUrl?: string;

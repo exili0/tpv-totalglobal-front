@@ -378,6 +378,18 @@ export class TicketsHistoryComponent implements OnInit {
     return value;
   }
 
+  getRefundStatusLabel(ticket: TicketSummary): string {
+    if (ticket.refundedAmount <= 0) {
+      return 'Sin devoluciones';
+    }
+
+    if (ticket.refundableAmount <= 0) {
+      return 'Devuelto completo';
+    }
+
+    return `Parcial (${this.formatCurrency(ticket.refundableAmount)} por devolver)`;
+  }
+
   private getSelectedLine() {
     if (!this.selectedTicket || this.selectedLineId === null) {
       return null;
@@ -468,7 +480,7 @@ export class TicketsHistoryComponent implements OnInit {
 
   private buildTicketFileContent(ticket: TicketDetail): string {
     const paidAtDate = new Date(ticket.paidAt);
-    const paidAtLabel = Number.isNaN(paidAtDate.getTime()) ? ticket.paidAt : this.formatDateAsDdMmYyyy(paidAtDate);
+    const paidAtLabel = Number.isNaN(paidAtDate.getTime()) ? ticket.paidAt : this.formatDateAsDdMmYyyyHhMm(paidAtDate);
     const width = 86;
     const sectionLine = this.buildReceiptSeparator(width);
     const linesHeader = this.buildReceiptTableHeader();
@@ -476,16 +488,27 @@ export class TicketsHistoryComponent implements OnInit {
       ? ticket.lines.map((line) => this.buildReceiptTableRow(line)).join('\n')
       : 'No hay lineas en este ticket.';
 
+    const refundSummaryLines = ticket.refundedAmount > 0
+      ? [
+          this.buildReceiptTwoColumnLine('Devuelto', this.formatCurrency(ticket.refundedAmount), 'Estado devolución', ticket.refundableAmount > 0 ? 'Parcial' : 'Completa', width),
+          ticket.refundableAmount > 0
+            ? this.buildReceiptTwoColumnLine('Por devolver', this.formatCurrency(ticket.refundableAmount), 'Notas', ticket.notes ?? '-', width)
+            : this.buildReceiptTwoColumnLine('Notas', ticket.notes ?? '-', ' ', ' ', width),
+        ]
+      : [
+          this.buildReceiptTwoColumnLine('Estado devolución', 'Sin devoluciones', 'Notas', ticket.notes ?? '-', width),
+        ];
+
     return [
       sectionLine,
       this.centerText('TPV TOTALGLOBAL', width),
       this.centerText('TICKET', width),
       sectionLine,
       this.buildReceiptTwoColumnLine('Ticket', `#${ticket.paymentId}`, 'Servicio', ticket.serviceLabel, width),
-      this.buildReceiptTwoColumnLine('Fecha cobro', paidAtLabel, 'Metodo pago', this.getPaymentMethodLabel(ticket.paymentMethod), width),
+      this.buildReceiptTwoColumnLine('Fecha cobro', paidAtLabel, 'Método pago', this.getPaymentMethodLabel(ticket.paymentMethod), width),
       this.buildReceiptTwoColumnLine('Cobrado por', this.getCollectorLabel(ticket.collectedBy), 'Propina', this.formatCurrency(ticket.tipAmount ?? 0), width),
-      this.buildReceiptTwoColumnLine('Importe total', this.formatCurrency(ticket.totalAmount), 'Devuelto', this.formatCurrency(ticket.refundedAmount), width),
-      this.buildReceiptTwoColumnLine('Pendiente devolucion', this.formatCurrency(ticket.refundableAmount), 'Notas', ticket.notes ?? '-', width),
+      this.buildReceiptTwoColumnLine('Importe total', this.formatCurrency(ticket.totalAmount), 'Estado', this.getRefundStatusLabel(ticket), width),
+      ...refundSummaryLines,
       sectionLine,
       'LINEAS DEL TICKET',
       sectionLine,
@@ -535,6 +558,16 @@ export class TicketsHistoryComponent implements OnInit {
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
     const year = value.getFullYear();
     return `${day},${month},${year}`;
+  }
+
+  /** Formatea fecha en salida fija dd/MM/yyyy HH:mm para tickets descargables. */
+  private formatDateAsDdMmYyyyHhMm(value: Date): string {
+    const day = `${value.getDate()}`.padStart(2, '0');
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const year = value.getFullYear();
+    const hours = `${value.getHours()}`.padStart(2, '0');
+    const minutes = `${value.getMinutes()}`.padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   }
 
   private buildReceiptSeparator(width: number): string {

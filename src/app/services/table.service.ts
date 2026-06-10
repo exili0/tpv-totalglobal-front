@@ -29,19 +29,24 @@ export class TableService {
     return this.http.post<BusinessTable>(this.apiUrl, request);
   }
 
+  /** Desactiva una mesa (uso administrativo). */
+  deleteTable(tableNumber: number): Observable<BusinessTable> {
+    return this.http.delete<BusinessTable>(`${this.apiUrl}/${tableNumber}`);
+  }
+
   /** Toma bloqueo operativo de mesa para un operador/sesión. */
-  claimTable(tableNumber: number, username: string): Observable<BusinessTable> {
+  claimTable(tableNumber: number, _username: string): Observable<BusinessTable> {
     const sessionToken = this.authService.getSessionToken();
-    const role = this.authService.getUserRole() ?? '';
-    const params = new HttpParams().set('username', username).set('sessionToken', sessionToken).set('role', role);
+    // username y role ya no viajan por query: backend los resuelve desde JWT.
+    const params = new HttpParams().set('sessionToken', sessionToken);
     return this.http.post<BusinessTable>(`${this.apiUrl}/${tableNumber}/claim`, null, { params });
   }
 
   /** Libera bloqueo de mesa cuando se abandona o finaliza operación. */
-  releaseTable(tableNumber: number, username: string): Observable<BusinessTable> {
+  releaseTable(tableNumber: number, _username: string): Observable<BusinessTable> {
     const sessionToken = this.authService.getSessionToken();
-    const role = this.authService.getUserRole() ?? '';
-    const params = new HttpParams().set('username', username).set('sessionToken', sessionToken).set('role', role);
+    // Solo mantenemos sessionToken operativo para control de bloqueo de mesa.
+    const params = new HttpParams().set('sessionToken', sessionToken);
     return this.http.post<BusinessTable>(`${this.apiUrl}/${tableNumber}/release`, null, { params });
   }
 }

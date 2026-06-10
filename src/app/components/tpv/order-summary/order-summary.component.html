@@ -85,12 +85,8 @@
               <span class="stat-value">{{ $any(summary).itemCount }}</span>
             </div>
             <div class="stat-card">
-              <span class="stat-label">Subtotal</span>
-              <span class="stat-value">{{ $any(summary).subtotal | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">IVA</span>
-              <span class="stat-value">{{ $any(summary).totalVat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
+              <span class="stat-label">Total productos</span>
+              <span class="stat-value">{{ $any(summary).total | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</span>
             </div>
             <div class="stat-card stat-card--tip" *ngIf="tipAmount > 0">
               <span class="stat-label">Propina</span>

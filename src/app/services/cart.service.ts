@@ -242,11 +242,16 @@ export class CartService {
    * Calcula totales y actualiza el estado del carrito
    */
   private updateCartItems(items: CartItem[], tableNumber: number): void {
-    // Calcular subtotal, VAT y total para cada item
+    // Precio de producto con IVA incluido:
+    // - total = PVP * cantidad
+    // - VAT/subtotal se extraen solo para métricas internas
     items.forEach(item => {
-      item.subtotal = item.unitPrice * item.quantity;
-      item.vat = item.subtotal * (item.vatPercent / 100);
-      item.total = item.subtotal + item.vat;
+      const grossTotal = item.unitPrice * item.quantity;
+      const vatRate = item.vatPercent > 0 ? item.vatPercent : 0;
+      const vat = vatRate > 0 ? grossTotal * (vatRate / (100 + vatRate)) : 0;
+      item.vat = vat;
+      item.subtotal = grossTotal - vat;
+      item.total = grossTotal;
     });
 
     this.tableCarts[tableNumber] = this.cloneItems(items);
@@ -291,7 +296,6 @@ export class CartService {
       // Carrito vacío = también limpiamos orden abierta para no dejar basura operativa.
       return this.posOperationsService.clearOpenOrder(
         tableNumber,
-        operatorUsername,
         this.authService.getSessionToken()
       ).pipe(
         catchError((error) => {
@@ -333,9 +337,9 @@ export class CartService {
     return order.orderLines.map((line: SaleOrderLine) => {
       const quantity = Number(line.quantity) || 0;
       const unitPrice = Number(line.unitPrice) || 0;
-      const subtotal = Number(line.subtotal) || (quantity * unitPrice);
+      const total = Number(line.total) || (quantity * unitPrice);
       const vat = Number(line.vatAmount) || 0;
-      const total = Number(line.total) || (subtotal + vat);
+      const subtotal = Number(line.subtotal) || (total - vat);
 
       return {
         productId: line.product?.id ?? 0,

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription, forkJoin, interval } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -15,7 +16,7 @@ import { PosOperationsService } from '../../../services/pos-operations.service';
 @Component({
   selector: 'app-table-selector',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, CurrencyPipe],
   templateUrl: './table-selector.component.html',
   styleUrl: './table-selector.component.css',
 })
@@ -23,8 +24,16 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
   tables: BusinessTable[] = [];
   isLoading = false;
   errorMessage: string | null = null;
+  infoMessage: string | null = null;
   pendingOrderTableNumbers = new Set<number>();
+  /** Importe total pendiente (€) por número de mesa, actualizado en cada carga. */
+  pendingOrderAmounts = new Map<number, number>();
   currentShift: CashRegisterShift | null = null;
+  isMoveMode = false;
+  isTableManageOpen = false;
+  selectedSourceTableNumber: number | null = null;
+  newTableNumber: number | null = null;
+  newTableName = '';
 
   private refreshSubscription?: Subscription;
   private currentUsername: string | null = null;
@@ -36,6 +45,10 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly posOperationsService: PosOperationsService
   ) {}
+
+  get isAdmin(): boolean {
+    return this.authService.getUserRole() === 'ADMIN';
+  }
 
   ngOnInit(): void {
     this.currentUsername = this.authService.getCurrentUsername();
@@ -53,6 +66,7 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
 
   loadTables(): void {
     this.errorMessage = null;
+    this.infoMessage = null;
     this.isLoading = true;
 
     forkJoin({
@@ -69,6 +83,15 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
           // si hay orden abierta con líneas, también tratamos la mesa como ocupada.
           this.pendingOrderTableNumbers = this.buildPendingOrderTableSet(openOrders);
 
+          // Si la mesa origen seleccionada deja de ser válida, la reseteamos.
+          if (this.selectedSourceTableNumber !== null && !this.pendingOrderTableNumbers.has(this.selectedSourceTableNumber)) {
+            this.selectedSourceTableNumber = null;
+          }
+
+          if (this.isMoveMode && this.selectedSourceTableNumber === null && this.movableSourceTables.length > 0) {
+            this.selectedSourceTableNumber = this.movableSourceTables[0].tableNumber;
+          }
+
           if (!this.isCashShiftOpen()) {
             this.errorMessage = 'La caja está cerrada. Debes abrir turno para acceder a mesas y pedidos.';
           }
@@ -80,6 +103,11 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
   }
 
   openTable(table: BusinessTable): void {
+    if (this.isMoveMode) {
+      this.moveOrderToTable(table);
+      return;
+    }
+
     if (!this.isCashShiftOpen()) {
       this.errorMessage = 'La caja está cerrada. Abre turno antes de tomar una mesa.';
       return;
@@ -108,6 +136,151 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
     });
   }
 
+  get movableSourceTables(): BusinessTable[] {
+    return this.tables.filter((table) => this.hasPendingOrder(table) && !this.isTableLockedByOther(table));
+  }
+
+  toggleMoveMode(): void {
+    if (!this.isCashShiftOpen()) {
+      this.errorMessage = 'La caja está cerrada. Abre turno antes de mover una comanda.';
+      return;
+    }
+
+    this.errorMessage = null;
+    this.infoMessage = null;
+    this.isMoveMode = !this.isMoveMode;
+
+    if (!this.isMoveMode) {
+      this.selectedSourceTableNumber = null;
+      return;
+    }
+
+    if (this.movableSourceTables.length === 0) {
+      this.errorMessage = 'No hay mesas con comandas abiertas disponibles para mover';
+      this.isMoveMode = false;
+      return;
+    }
+
+    this.selectedSourceTableNumber = this.movableSourceTables[0].tableNumber;
+    this.infoMessage = 'Modo mover mesa activo: selecciona una mesa destino libre';
+  }
+
+  toggleTableManage(): void {
+    this.isTableManageOpen = !this.isTableManageOpen;
+  }
+
+  createTable(): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Solo ADMIN puede crear mesas';
+      return;
+    }
+
+    if (this.newTableNumber === null || this.newTableNumber < 1) {
+      this.errorMessage = 'Indica un número de mesa válido (mínimo 1)';
+      return;
+    }
+
+    this.errorMessage = null;
+    this.infoMessage = null;
+
+    this.tableService.createTable({
+      tableNumber: this.newTableNumber,
+      displayName: this.newTableName?.trim() || `Mesa ${this.newTableNumber}`,
+      capacity: 4
+    }).subscribe({
+      next: () => {
+        this.infoMessage = `Mesa ${this.newTableNumber} creada correctamente`;
+        this.newTableNumber = null;
+        this.newTableName = '';
+        this.isTableManageOpen = false;
+        this.loadTables();
+      },
+      error: (error: unknown) => {
+        this.errorMessage = this.getErrorMessage(error, 'No se pudo crear la mesa');
+      }
+    });
+  }
+
+  deleteTable(table: BusinessTable, event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!this.isAdmin) {
+      this.errorMessage = 'Solo ADMIN puede eliminar mesas';
+      return;
+    }
+
+    if (this.isTableOccupied(table)) {
+      this.errorMessage = `No se puede eliminar "${this.getTableDisplayName(table)}": tiene una comanda activa`;
+      return;
+    }
+
+    if (!confirm(`¿Desactivar ${this.getTableDisplayName(table)}?`)) {
+      return;
+    }
+
+    this.errorMessage = null;
+    this.infoMessage = null;
+
+    this.tableService.deleteTable(table.tableNumber).subscribe({
+      next: () => {
+        this.infoMessage = `Mesa ${table.tableNumber} desactivada`;
+        this.loadTables();
+      },
+      error: (error: unknown) => {
+        this.errorMessage = this.getErrorMessage(error, 'No se pudo desactivar la mesa');
+      }
+    });
+  }
+
+  private moveOrderToTable(destinationTable: BusinessTable): void {
+    this.errorMessage = null;
+    this.infoMessage = null;
+
+    if (!this.isCashShiftOpen()) {
+      this.errorMessage = 'La caja está cerrada. Abre turno antes de mover una comanda.';
+      return;
+    }
+
+    if (this.selectedSourceTableNumber === null) {
+      this.errorMessage = 'Selecciona una mesa origen para mover la comanda';
+      return;
+    }
+
+    if (this.selectedSourceTableNumber === destinationTable.tableNumber) {
+      this.errorMessage = 'La mesa destino debe ser diferente de la mesa origen';
+      return;
+    }
+
+    if (this.isTableOccupied(destinationTable)) {
+      this.errorMessage = 'La mesa destino ya está ocupada';
+      return;
+    }
+
+    if (this.isTableLockedByOther(destinationTable)) {
+      this.errorMessage = this.getBlockedTableMessage(destinationTable);
+      return;
+    }
+
+    this.posOperationsService
+      .moveOpenOrderBetweenTables({
+        fromTableNumber: this.selectedSourceTableNumber,
+        toTableNumber: destinationTable.tableNumber,
+        sessionToken: this.authService.getSessionToken(),
+      })
+      .subscribe({
+        next: () => {
+          this.isMoveMode = false;
+          this.infoMessage = `Comanda movida de mesa ${this.selectedSourceTableNumber} a mesa ${destinationTable.tableNumber}`;
+          this.selectedSourceTableNumber = null;
+          this.cartService.setActiveTable(destinationTable.tableNumber);
+          this.router.navigate(['/tpv/mesa', destinationTable.tableNumber]);
+        },
+        error: (error: unknown) => {
+          this.errorMessage = this.getErrorMessage(error, 'No se pudo mover la comanda entre mesas');
+        },
+      });
+  }
+
   getStatusLabel(status: BusinessTable['status']): string {
     if (status === 'OCCUPIED') return 'Ocupada';
     if (status === 'INACTIVE') return 'Inactiva';
@@ -129,6 +302,11 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
 
   hasPendingOrder(table: BusinessTable): boolean {
     return this.pendingOrderTableNumbers.has(table.tableNumber);
+  }
+
+  /** Devuelve el importe total pendiente de cobro de la mesa, o null si no hay pedido. */
+  getPendingAmount(table: BusinessTable): number | null {
+    return this.pendingOrderAmounts.get(table.tableNumber) ?? null;
   }
 
   isTableOccupied(table: BusinessTable): boolean {
@@ -165,6 +343,7 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
 
   private buildPendingOrderTableSet(openOrders: SaleOrder[]): Set<number> {
     const tableNumbers = new Set<number>();
+    const amounts = new Map<number, number>();
 
     for (const order of openOrders) {
       const tableNumber = order.table?.tableNumber;
@@ -175,9 +354,11 @@ export class TableSelectorComponent implements OnInit, OnDestroy {
       if (order.orderLines && order.orderLines.length > 0) {
         // Evitamos marcar como ocupadas mesas con órdenes vacías (estado transitorio).
         tableNumbers.add(tableNumber);
+        amounts.set(tableNumber, order.total ?? 0);
       }
     }
 
+    this.pendingOrderAmounts = amounts;
     return tableNumbers;
   }
 

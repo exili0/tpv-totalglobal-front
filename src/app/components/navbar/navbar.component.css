@@ -83,6 +83,30 @@
     height: 34px;
 }
 
+/* Botón con badge superpuesto (posicionamiento relativo) */
+.icon-button--relative {
+    position: relative;
+}
+
+/* Punto de estado que indica que hay un filtro de daltonismo activo */
+.a11y-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--warning-color);
+    border: 2px solid var(--secondary-soft);
+    /* Pulso suave para captar la atención sin ser molesto */
+    animation: a11y-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes a11y-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.25); opacity: 0.75; }
+}
+
 .user-card {
     position: absolute;
     top: calc(100% + 10px);
@@ -93,7 +117,7 @@
     background: var(--surface-bg);
     color: var(--text-color);
     box-shadow: var(--shadow-strong);
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    border: 1px solid var(--border-color);
     z-index: 20;
 }
 
@@ -113,7 +137,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
 }
 
 .user-card-value,
@@ -180,10 +204,10 @@ button {
     width: min(560px, 96vw);
     max-height: 84vh;
     overflow-y: auto;
-    background: var(--surface-bg);
-    border: var(--border-primary);
-    border-radius: 12px;
-    padding: 14px;
+    background: linear-gradient(170deg, color-mix(in srgb, var(--surface-bg) 92%, var(--secondary-soft) 8%), var(--surface-bg));
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--secondary-color) 30%);
+    border-radius: 16px;
+    padding: 16px;
     box-shadow: var(--shadow-strong);
 }
 
@@ -192,20 +216,20 @@ button {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .ops-modal-header h3 {
     margin: 0;
     color: var(--primary-color);
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .ops-close {
     margin: 0;
-    min-height: 34px;
-    padding: 6px 12px;
-    border-radius: 8px;
+    min-height: 36px;
+    padding: 7px 13px;
+    border-radius: 10px;
     color: var(--white);
     font-weight: 700;
 }
