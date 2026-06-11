@@ -235,31 +235,41 @@ button {
 }
 
 .side-menu {
-    width: 300px;
+    width: 320px;
     max-width: 80vw;
     height: 100vh;
-    background: var(--surface-bg);
+    background: linear-gradient(170deg, color-mix(in srgb, var(--surface-bg) 92%, var(--secondary-soft) 8%), var(--surface-bg));
+    border-right: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--secondary-color) 30%);
     box-shadow: var(--shadow-strong);
-    padding: 16px 18px;
+    padding: 16px;
     box-sizing: border-box;
     overflow-y: auto;
+}
+
+.side-menu .navbar-logo {
+    display: block;
+    height: 42px;
+    margin: 2px auto 8px;
 }
 
 .side-menu-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--white) 92%);
 }
 
 .side-menu-title {
     display: block;
     width: 100%;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-color);
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
     text-align: center;
 }
 
@@ -269,30 +279,36 @@ button {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .side-menu-item {
     padding: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     color: var(--text-color);
-    background: var(--secondary-soft);
+    background: var(--surface-light);
+    border: 1px solid color-mix(in srgb, var(--border-light) 75%, var(--secondary-color) 25%);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .side-menu-item button {
     width: 100%;
     min-height: 44px;
-    padding: 10px 12px;
+    padding: 10px 14px;
     display: flex;
-    justify-content: center;
-    text-align: center;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    font-weight: 600;
     color: inherit;
     font: inherit;
 }
 
 .side-menu-item:hover {
-    background: var(--surface-muted-hover);
+    background: color-mix(in srgb, var(--primary-color) 10%, var(--white) 90%);
+    box-shadow: var(--shadow-soft);
+    transform: translateX(2px);
 }
 
 .side-menu-placeholder {
@@ -323,10 +339,27 @@ button {
 .section-title {
     display: inline-block;
     width: 100%;
-    text-align: center;
+    text-align: left;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+.side-menu-section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    margin-top: 8px;
+    padding: 6px 2px 2px;
+    cursor: default;
+}
+
+.side-menu-section:hover {
+    transform: none;
+    background: transparent;
+    box-shadow: none;
 }
 
 
@@ -402,7 +435,7 @@ button {
     }
 
     .side-menu {
-        width: 250px;
+        width: 262px;
         padding: 12px 14px;
     }
 }

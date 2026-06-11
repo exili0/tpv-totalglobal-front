@@ -75,6 +75,7 @@ export class ProductFormComponent implements OnInit {
         categoryId: resolvedCategoryId,
       });
     }
+
   }
 
   private loadCategories(): void {

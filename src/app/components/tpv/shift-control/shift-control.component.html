@@ -20,12 +20,24 @@
     <label for="openingFloat">Fondo inicial</label>
     <input
       id="openingFloat"
-      type="number"
-      min="0"
-      step="0.01"
-      [(ngModel)]="openingFloat"
+      type="text"
+      inputmode="decimal"
+      [value]="openingFloatInput"
+      readonly
       [disabled]="isLoading || isShiftOpen"
     >
+    <div class="touch-keypad" [class.touch-keypad-disabled]="isLoading || isShiftOpen">
+      <button type="button" class="keypad-action" (click)="clearOpeningFloat()" [disabled]="isLoading || isShiftOpen">C</button>
+      <button type="button" class="keypad-action" (click)="backspaceOpeningFloat()" [disabled]="isLoading || isShiftOpen">⌫</button>
+      <button
+        type="button"
+        class="keypad-digit"
+        *ngFor="let digit of keypadDigits"
+        (click)="pressOpeningFloatDigit(digit)"
+        [disabled]="isLoading || isShiftOpen">
+        {{ digit }}
+      </button>
+    </div>
   </div>
 
   <div class="actions-row">

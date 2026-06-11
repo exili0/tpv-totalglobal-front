@@ -83,6 +83,7 @@
           <th>Abierto por</th>
           <th>Cerrado por</th>
           <th>Fondo inicial</th>
+          <th>Fondo final (caja)</th>
           <th>Ventas</th>
           <th>Beneficio</th>
           <th>Acciones</th>
@@ -103,6 +104,7 @@
           <td>{{ shift.openedBy || 'No informado' }}</td>
           <td>{{ shift.closedBy || 'No informado' }}</td>
           <td>{{ shift.openingFloat | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
+          <td>{{ getFinalCashFloat(shift) | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td>{{ shift.totalSales | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td class="profit-cell">{{ shift.totalProfit | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</td>
           <td class="actions-cell">

@@ -339,7 +339,15 @@
 }
 
 .table-status {
-  color: var(--success-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--success-color) 12%, var(--white) 88%);
+  color: var(--success-dark);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -374,11 +382,15 @@
 }
 
 .status-occupied {
-  color: var(--danger-color);
+  background-color: color-mix(in srgb, var(--danger-color) 12%, var(--white) 88%);
+  color: var(--danger-dark);
+  border-color: color-mix(in srgb, var(--danger-color) 35%, var(--white) 65%);
 }
 
 .status-inactive {
-  color: var(--danger-color);
+  background-color: color-mix(in srgb, var(--warning-color) 14%, var(--white) 86%);
+  color: var(--warning-dark);
+  border-color: color-mix(in srgb, var(--warning-color) 36%, var(--white) 64%);
 }
 
 .error-message,

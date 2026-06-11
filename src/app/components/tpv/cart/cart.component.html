@@ -15,24 +15,42 @@
           <div class="item-info">
             <h4>{{item.productName}}</h4>
             <p>{{item.unitPrice | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
+            <small class="item-note" *ngIf="item.note">x{{ item.quantity }} "{{ item.note }}"</small>
+            <button type="button" class="btn-note" (click)="editNote(item)" [disabled]="(isCartLocked$ | async) ?? false">
+              {{ item.note ? 'Editar nota' : 'Anadir nota' }}
+            </button>
           </div>
 
           <div class="item-quantity">
-            <button (click)="updateQuantity(item.productId, item.quantity - 1)" [disabled]="item.quantity <= 1 || ((isCartLocked$ | async) ?? false)">-</button>
-            <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.productId, item.quantity)" min="1" [disabled]="(isCartLocked$ | async) ?? false">
-            <button (click)="updateQuantity(item.productId, item.quantity + 1)" [disabled]="(isCartLocked$ | async) ?? false">+</button>
+            <button (click)="updateQuantity(item.lineId, item.quantity - 1)" [disabled]="item.quantity <= 1 || ((isCartLocked$ | async) ?? false)">-</button>
+            <input type="number" [(ngModel)]="item.quantity" (change)="updateQuantity(item.lineId, item.quantity)" min="1" [disabled]="(isCartLocked$ | async) ?? false">
+            <button (click)="updateQuantity(item.lineId, item.quantity + 1)" [disabled]="(isCartLocked$ | async) ?? false">+</button>
           </div>
 
           <div class="item-total">
             <p>{{item.total | currency:'EUR':'symbol':'1.2-2':'es-ES'}}</p>
-            <button (click)="removeItem(item.productId)" class="btn-remove" [disabled]="(isCartLocked$ | async) ?? false">X</button>
+            <button (click)="removeItem(item.lineId)" class="btn-remove" [disabled]="(isCartLocked$ | async) ?? false">X</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="cart-footer" *ngIf="$any(items).length > 0">
-      <button (click)="clearCart()" class="btn-clear" [disabled]="(isCartLocked$ | async) ?? false">Limpiar Carrito</button>
+  <div class="note-modal-backdrop" *ngIf="isNoteModalOpen" (click)="closeNoteModal()">
+    <div class="note-modal" (click)="$event.stopPropagation()">
+      <p class="note-modal-title">Nota del producto</p>
+      <p class="note-modal-product">{{ editingProductName }}</p>
+      <textarea
+        class="note-modal-input"
+        rows="4"
+        maxlength="160"
+        placeholder="Ejemplo: sin hielo"
+        [(ngModel)]="noteDraft"></textarea>
+
+      <div class="note-modal-actions">
+        <button type="button" class="note-btn note-btn-cancel" (click)="closeNoteModal()">Cancelar</button>
+        <button type="button" class="note-btn note-btn-save" (click)="saveNote()">Guardar nota</button>
+      </div>
     </div>
   </div>
 </div>

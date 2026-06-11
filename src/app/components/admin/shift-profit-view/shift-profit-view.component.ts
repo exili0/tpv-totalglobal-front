@@ -109,6 +109,11 @@ export class ShiftProfitViewComponent implements OnInit {
     return status === 'OPEN' ? 'status-open' : 'status-closed';
   }
 
+  /** Fondo final teórico en caja física: fondo inicial + ventas en efectivo netas. */
+  getFinalCashFloat(shift: CashRegisterShift): number {
+    return (shift.openingFloat || 0) + (shift.cashSales || 0);
+  }
+
   viewShiftDetails(shiftId: number): void {
     this.router.navigate(['/admin/shift-details', shiftId]);
   }

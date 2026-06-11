@@ -90,6 +90,7 @@
                         <th>NOMBRE</th>
                         <th>APELLIDO</th>
                         <th>EMAIL</th>
+                        <th>ROL</th>
                         <th>FECHA</th>
                         <th>ACTIVO</th>
                         <th>ACCIONES</th>
@@ -102,6 +103,7 @@
                         <td>{{user.name}}</td>
                         <td>{{user.lastname}}</td>
                         <td>{{user.email}}</td>
+                        <td>{{ formatRole(user.role) }}</td>
                         <td>{{ formatDisplayDate(user.date) }}</td>
                         <td class="active-cell">
                             <span class="custom-checkbox" [class.active]="user.active" (click)="toggleUserActive(user)" *ngIf="user.cod">

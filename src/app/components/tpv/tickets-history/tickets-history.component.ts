@@ -387,7 +387,7 @@ export class TicketsHistoryComponent implements OnInit {
       return 'Devuelto completo';
     }
 
-    return `Parcial (${this.formatCurrency(ticket.refundableAmount)} por devolver)`;
+    return `Devuelto parcial (${this.formatCurrency(ticket.refundedAmount)} devueltos, ${this.formatCurrency(ticket.refundableAmount)} pendientes)`;
   }
 
   private getSelectedLine() {

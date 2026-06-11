@@ -22,7 +22,7 @@
 
 .btn-new {
   padding: 10px 16px;
-  background-color: var(--success-color);
+  background-color: var(--secondary-color);
   color: var(--white);
   border: none;
   border-radius: 4px;
@@ -32,7 +32,7 @@
 }
 
 .btn-new:hover {
-  background-color: var(--success-dark);
+  background-color: var(--secondary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -182,8 +182,8 @@ th {
 }
 
 .audit-modal {
-  width: min(720px, 96vw);
-  max-height: 80vh;
+  width: min(920px, 98vw);
+  max-height: 86vh;
   overflow: auto;
   background-color: var(--white);
   padding: 24px;
@@ -197,30 +197,75 @@ th {
   color: var(--text-light);
 }
 
-.audit-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+.audit-subtitle {
+  margin: 0 0 12px;
+  color: var(--text-light);
+  font-size: 13px;
 }
 
-.audit-item {
-  display: grid;
-  gap: 4px;
-  padding: 12px;
+.audit-toolbar {
+  margin-bottom: 12px;
+}
+
+.audit-toolbar input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
-  background-color: var(--surface-light);
-  border: 1px solid var(--border-light);
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: var(--white);
 }
 
-.audit-item strong {
+.audit-list-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.audit-list {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 2fr 1.2fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.audit-list:last-child {
+  border-bottom: 0;
+}
+
+.audit-list-header {
+  background: color-mix(in srgb, var(--secondary-color) 12%, var(--white) 88%);
+  color: var(--primary-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.audit-list:not(.audit-list-header):nth-child(odd) {
+  background-color: var(--surface-light);
+}
+
+.audit-list:not(.audit-list-header):hover {
+  background: color-mix(in srgb, var(--secondary-color) 8%, var(--white) 92%);
+}
+
+.audit-list strong,
+.audit-list span,
+.audit-list small,
+.audit-list time {
+  min-width: 0;
+}
+
+.audit-list strong {
   color: var(--primary-color);
 }
 
-.audit-item span,
-.audit-item small,
-.audit-item time {
+.audit-list span,
+.audit-list small,
+.audit-list time {
   color: var(--text-light);
   font-size: 13px;
 }
@@ -242,13 +287,29 @@ tr:hover {
   border: 1px solid var(--border-color);
 }
 
-.active {
-  color: var(--success-color);
-  font-weight: 600;
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
-.inactive {
-  color: var(--danger-color);
+.status-active {
+  background-color: color-mix(in srgb, var(--success-color) 14%, var(--white) 86%);
+  color: var(--success-dark);
+  border-color: color-mix(in srgb, var(--success-color) 38%, var(--white) 62%);
+}
+
+.status-inactive {
+  background-color: color-mix(in srgb, var(--danger-color) 12%, var(--white) 88%);
+  color: var(--danger-dark);
+  border-color: color-mix(in srgb, var(--danger-color) 35%, var(--white) 65%);
 }
 
 .actions {
@@ -277,12 +338,12 @@ tr:hover {
 }
 
 .btn-activate {
-  background-color: var(--success-color);
+  background-color: var(--primary-color);
   color: var(--white);
 }
 
 .btn-activate:hover {
-  background-color: var(--success-dark);
+  background-color: var(--primary-dark);
 }
 
 .btn-deactivate {
@@ -301,6 +362,31 @@ tr:hover {
 
 .btn-delete:hover {
   background-color: var(--danger-dark);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-dark);
+  display: grid;
+  place-items: center;
+  z-index: 1100;
+  padding: 16px;
+}
+
+@media (max-width: 900px) {
+  .audit-list {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .audit-list-header {
+    display: none;
+  }
+
+  .audit-list {
+    padding: 12px;
+  }
 }
 
 @media (max-width: 768px) {

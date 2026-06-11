@@ -46,18 +46,40 @@
             <button class="btn-modal-close" type="button" (click)="closeAuditModal()" aria-label="Cerrar auditoría"> × </button>
           </div>
 
+          <p class="audit-subtitle">Consulta rápida de altas de categoría, ordenadas de más reciente a más antigua.</p>
+
+          <div class="audit-toolbar">
+            <input
+              type="text"
+              [(ngModel)]="auditFilter"
+              placeholder="Filtrar por categoría, usuario, detalle o fecha"
+              aria-label="Filtrar registros de auditoría de categorías"
+            >
+          </div>
+
           <div *ngIf="auditEntries.length === 0" class="audit-empty">
             No hay altas registradas todavía.
           </div>
 
-          <ul *ngIf="auditEntries.length > 0" class="audit-list">
-            <li *ngFor="let entry of auditEntries" class="audit-item">
+          <div *ngIf="auditEntries.length > 0 && filteredAuditEntries.length === 0" class="audit-empty">
+            No hay registros que coincidan con el filtro actual.
+          </div>
+
+          <div *ngIf="filteredAuditEntries.length > 0" class="audit-list-wrapper">
+            <div class="audit-list audit-list-header">
+              <span>Categoría</span>
+              <span>Usuario</span>
+              <span>Detalle</span>
+              <span>Fecha</span>
+            </div>
+
+            <div class="audit-list" *ngFor="let entry of filteredAuditEntries">
               <strong>{{ entry.entityName }}</strong>
               <span>{{ entry.actor }}</span>
               <small>{{ entry.details || 'Alta de categoría' }}</small>
-              <time>{{ entry.createdAt | date:'dd/MM/yyyy HH:mm' }}</time>
-            </li>
-          </ul>
+              <time>{{ formatAuditDate(entry.createdAt) }}</time>
+            </div>
+          </div>
         </div>
       </div>
         <!--------------------------------------------->
@@ -80,7 +102,7 @@
                 <div class="color-preview" [style.backgroundColor]="getAccessibleColor(category.color, i)"></div>
               </td>
               <td>
-                <span [class.active]="category.active" [class.inactive]="!category.active">
+                <span class="status-badge" [class.status-active]="category.active" [class.status-inactive]="!category.active">
                   {{category.active ? 'Activa' : 'Inactiva'}}
                 </span>
               </td>

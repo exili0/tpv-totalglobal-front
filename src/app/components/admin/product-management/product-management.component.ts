@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { Product } from '../../../models/product.model';
@@ -15,7 +16,7 @@ import { AuditEvent, AuditService } from '../../../services/audit.service';
 @Component({
   selector: 'app-product-management',
   standalone: true,
-  imports: [CommonModule, ProductFormComponent, NavbarComponent],
+  imports: [CommonModule, FormsModule, ProductFormComponent, NavbarComponent],
   templateUrl: './product-management.component.html',
   styleUrl: './product-management.component.css',
 })
@@ -26,6 +27,7 @@ export class ProductManagementComponent implements OnInit {
   // Controla si el formulario de creación/edición está visible
   showForm = false;
   showAuditModal = false;
+  auditFilter = '';
   // Producto que se está editando; null si es una creación nueva
   selectedProduct: Product | null = null;
   auditEntries: AuditEvent[] = [];
@@ -67,12 +69,47 @@ export class ProductManagementComponent implements OnInit {
   }
 
   openAuditModal(): void {
-    this.auditEntries = this.auditService.getEvents('product');
+    this.auditFilter = '';
+    this.auditEntries = this.auditService
+      .getEvents('product')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     this.showAuditModal = true;
   }
 
   closeAuditModal(): void {
     this.showAuditModal = false;
+  }
+
+  get filteredAuditEntries(): AuditEvent[] {
+    const term = this.auditFilter.trim().toLowerCase();
+    if (!term) {
+      return this.auditEntries;
+    }
+
+    return this.auditEntries.filter((entry) => {
+      const values = [
+        entry.entityName,
+        entry.actor,
+        entry.details ?? '',
+        this.formatAuditDate(entry.createdAt),
+      ];
+      return values.some((value) => value.toLowerCase().includes(term));
+    });
+  }
+
+  formatAuditDate(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
   }
 
   /** Abre el formulario precargado con los datos del producto a editar. */

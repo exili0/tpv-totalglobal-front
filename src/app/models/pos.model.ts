@@ -200,6 +200,8 @@ export interface ShiftProductSale {
   quantitySold: number;
   totalSales: number;
   totalProfit: number;
+  stockLossQuantity: number;
+  stockLossAmount: number;
   stockAtOpen: number | null;
   stockAtClose: number | null;
 }

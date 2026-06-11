@@ -163,6 +163,18 @@ export class UsersManagementComponent implements OnInit {
     return `${day}-${month}-${year}`;
   }
 
+  formatRole(role?: string): string {
+    if (role === 'ADMIN') {
+      return 'Admin';
+    }
+
+    if (role === 'COMMON_USER') {
+      return 'Usuario comun';
+    }
+
+    return role || '-';
+  }
+
   toggleUserActive(user: User): void {
     if (user.cod) {
       // CORREGIDO: Tipado explícito en la actualización de estado activo

@@ -23,6 +23,11 @@ export class CartComponent implements OnInit {
   cartSummary$!: Observable<CartSummary>;
   isCartLocked$!: Observable<boolean>;
 
+  isNoteModalOpen = false;
+  editingLineId: string | null = null;
+  editingProductName = '';
+  noteDraft = '';
+
   constructor(private readonly cartService: CartService) {}
 
   ngOnInit(): void {
@@ -32,13 +37,36 @@ export class CartComponent implements OnInit {
   }
 
   /** Elimina un producto del carrito por completo. */
-  removeItem(productId: number): void {
-    this.cartService.removeFromCart(productId);
+  removeItem(lineId: string): void {
+    this.cartService.removeFromCartByLine(lineId);
   }
 
   /** Actualiza la cantidad de un producto ya añadido. */
-  updateQuantity(productId: number, quantity: number): void {
-    this.cartService.updateItemQuantity(productId, quantity);
+  updateQuantity(lineId: string, quantity: number): void {
+    this.cartService.updateItemQuantityByLine(lineId, quantity);
+  }
+
+  editNote(item: CartItem): void {
+    this.editingLineId = item.lineId;
+    this.editingProductName = item.productName;
+    this.noteDraft = item.note ?? '';
+    this.isNoteModalOpen = true;
+  }
+
+  closeNoteModal(): void {
+    this.isNoteModalOpen = false;
+    this.editingLineId = null;
+    this.editingProductName = '';
+    this.noteDraft = '';
+  }
+
+  saveNote(): void {
+    if (!this.editingLineId) {
+      return;
+    }
+
+    this.cartService.updateItemNote(this.editingLineId, this.noteDraft.trim());
+    this.closeNoteModal();
   }
 
   /** Vacía el carrito entero con confirmación del usuario para evitar pérdidas accidentales. */

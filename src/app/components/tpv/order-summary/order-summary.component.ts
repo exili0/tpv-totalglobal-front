@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { finalize, first, switchMap } from 'rxjs/operators';
 import { CartService } from '../../../services/cart.service';
-import { CartSummary } from '../../../models/cart.model';
+import { CartItem, CartSummary } from '../../../models/cart.model';
 import { PosOperationsService } from '../../../services/pos-operations.service';
 import { AuthService } from '../../../services/auth.service';
 import { CreateOrderRequest, PaymentMethod } from '../../../models/pos.model';
@@ -31,6 +31,7 @@ export class OrderSummaryComponent implements OnInit {
   isProcessing = false;
   feedbackMessage: string | null = null;
   errorMessage: string | null = null;
+  private lastClearedItems: CartItem[] = [];
 
   constructor(
     private readonly cartService: CartService,
@@ -50,6 +51,24 @@ export class OrderSummaryComponent implements OnInit {
     if (this.isExpanded) {
       this.currentStep = 1;
     }
+  }
+
+  clearCartFromSummary(event: MouseEvent, summary: CartSummary): void {
+    event.stopPropagation();
+
+    if (this.canUndoClear(summary)) {
+      this.cartService.restoreCartSnapshot(this.lastClearedItems);
+      this.lastClearedItems = [];
+      return;
+    }
+
+    this.lastClearedItems = summary.items.map((item) => ({ ...item }));
+    this.cartService.clearCart();
+    this.errorMessage = null;
+  }
+
+  canUndoClear(summary: CartSummary): boolean {
+    return summary.itemCount === 0 && this.lastClearedItems.length > 0;
   }
 
   goToStep(step: 1 | 2 | 3, total: number): void {
@@ -296,11 +315,8 @@ export class OrderSummaryComponent implements OnInit {
 
       const orderRequest: CreateOrderRequest = {
         tableNumber: this.selectedTable,
-        items: summary.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-        notes: this.notes.trim().length > 0 ? this.notes.trim() : undefined,
+        items: this.getGroupedOrderItems(summary),
+        notes: this.composeOrderNotes(summary),
         operatorUsername,
         operatorSessionToken: this.authService.getSessionToken(),
       };
@@ -432,5 +448,37 @@ export class OrderSummaryComponent implements OnInit {
   // Convertir a céntimos.
   private fromCents(cents: number): number {
     return this.roundToCents(cents / 100);
+  }
+
+  private getGroupedOrderItems(summary: CartSummary): Array<{ productId: number; quantity: number }> {
+    const grouped = new Map<number, number>();
+    for (const item of summary.items) {
+      const previous = grouped.get(item.productId) ?? 0;
+      grouped.set(item.productId, previous + item.quantity);
+    }
+
+    return Array.from(grouped.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+  }
+
+  private composeOrderNotes(summary: CartSummary): string | undefined {
+    const ticketNote = this.notes.trim();
+    const itemNotes = summary.items
+      .filter((item) => (item.note ?? '').trim().length > 0)
+      .map((item) => `${item.productName} x${item.quantity}: ${(item.note ?? '').trim()}`)
+      .join(' | ');
+
+    if (ticketNote.length > 0 && itemNotes.length > 0) {
+      return `${ticketNote} || ${itemNotes}`;
+    }
+
+    if (ticketNote.length > 0) {
+      return ticketNote;
+    }
+
+    if (itemNotes.length > 0) {
+      return itemNotes;
+    }
+
+    return undefined;
   }
 }

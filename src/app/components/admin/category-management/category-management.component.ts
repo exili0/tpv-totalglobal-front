@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
 import { Category } from '../../../models/category.model';
@@ -17,7 +18,7 @@ import { AuditEvent, AuditService } from '../../../services/audit.service';
 @Component({
   selector: 'app-category-management',
   standalone: true,
-  imports: [CommonModule, CategoryFormComponent, NavbarComponent],
+  imports: [CommonModule, FormsModule, CategoryFormComponent, NavbarComponent],
   templateUrl: './category-management.component.html',
   styleUrl: './category-management.component.css',
 })
@@ -28,6 +29,7 @@ export class CategoryManagementComponent implements OnInit {
   // Controla si el formulario de creación/edición está visible
   showForm = false;
   showAuditModal = false;
+  auditFilter = '';
   // Categoría que se está editando; null si es una creación nueva
   selectedCategory: Category | null = null;
   auditEntries: AuditEvent[] = [];
@@ -71,12 +73,47 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   openAuditModal(): void {
-    this.auditEntries = this.auditService.getEvents('category');
+    this.auditFilter = '';
+    this.auditEntries = this.auditService
+      .getEvents('category')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     this.showAuditModal = true;
   }
 
   closeAuditModal(): void {
     this.showAuditModal = false;
+  }
+
+  get filteredAuditEntries(): AuditEvent[] {
+    const term = this.auditFilter.trim().toLowerCase();
+    if (!term) {
+      return this.auditEntries;
+    }
+
+    return this.auditEntries.filter((entry) => {
+      const values = [
+        entry.entityName,
+        entry.actor,
+        entry.details ?? '',
+        this.formatAuditDate(entry.createdAt),
+      ];
+      return values.some((value) => value.toLowerCase().includes(term));
+    });
+  }
+
+  formatAuditDate(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
   }
 
   /** Abre el formulario precargado con los datos de la categoría a editar. */

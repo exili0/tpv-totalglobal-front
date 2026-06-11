@@ -24,6 +24,8 @@ export class ShiftControlComponent {
 
   // Fondo inicial en efectivo al abrir turno
   openingFloat = 0;
+  openingFloatInput = '0.00';
+  readonly keypadDigits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
   isLoading = false;
   isRefreshing = false;
   showCloseOptions = false;
@@ -68,7 +70,7 @@ export class ShiftControlComponent {
         next: (shift) => {
           this.currentShift = shift;
           this.pendingServices = [];
-          this.openingFloat = 0;
+          this.resetOpeningFloat();
           this.successMessage = 'Turno abierto correctamente';
         },
         error: (error: unknown) => {
@@ -196,6 +198,48 @@ export class ShiftControlComponent {
   private clearMessages(): void {
     this.successMessage = null;
     this.errorMessage = null;
+  }
+
+  pressOpeningFloatDigit(digit: number): void {
+    if (this.isShiftOpen || this.isLoading) {
+      return;
+    }
+
+    const compact = this.openingFloatInput.replace('.', '');
+    const nextCompact = (compact + digit.toString()).replace(/^0+(?=\d)/, '');
+    const normalized = nextCompact.length === 0 ? '0' : nextCompact;
+    const integerPart = normalized.slice(0, -2) || '0';
+    const decimalPart = normalized.slice(-2).padStart(2, '0');
+
+    this.openingFloatInput = `${integerPart}.${decimalPart}`;
+    this.openingFloat = Number(this.openingFloatInput);
+  }
+
+  backspaceOpeningFloat(): void {
+    if (this.isShiftOpen || this.isLoading) {
+      return;
+    }
+
+    const compact = this.openingFloatInput.replace('.', '');
+    const nextCompact = compact.length > 1 ? compact.slice(0, -1) : '0';
+    const integerPart = nextCompact.slice(0, -2) || '0';
+    const decimalPart = nextCompact.slice(-2).padStart(2, '0');
+
+    this.openingFloatInput = `${integerPart}.${decimalPart}`;
+    this.openingFloat = Number(this.openingFloatInput);
+  }
+
+  clearOpeningFloat(): void {
+    if (this.isShiftOpen || this.isLoading) {
+      return;
+    }
+
+    this.resetOpeningFloat();
+  }
+
+  private resetOpeningFloat(): void {
+    this.openingFloat = 0;
+    this.openingFloatInput = '0.00';
   }
 
   /** Normaliza cualquier fecha de entrada al formato dd,MM,yyyy HH:mm. */

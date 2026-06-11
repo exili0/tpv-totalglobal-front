@@ -65,6 +65,35 @@
   padding: 8px 10px;
   background-color: var(--white);
   color: var(--text-dark);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.touch-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.touch-keypad-disabled {
+  opacity: 0.6;
+}
+
+.keypad-action,
+.keypad-digit {
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-dark);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.keypad-action {
+  background: color-mix(in srgb, var(--secondary-color) 12%, var(--white) 88%);
+  color: var(--primary-color);
 }
 
 .actions-row {

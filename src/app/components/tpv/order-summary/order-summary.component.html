@@ -2,10 +2,33 @@
 
   <!-- Boton compacto siempre visible -->
   <div class="order-summary-container">
-    <button type="button" class="summary-toggle" (click)="toggleSummary()" [attr.aria-expanded]="isExpanded">
-      <span>Resumen</span>
-      <strong class="summary-badge">{{ $any(summary).itemCount }}</strong>
-    </button>
+    <div class="summary-actions">
+      <button type="button" class="summary-toggle" (click)="toggleSummary()" [attr.aria-expanded]="isExpanded">
+        <span class="summary-label">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor" aria-hidden="true">
+            <path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm440 240H120q-33 0-56.5-23.5T40-240v-440h80v440h680v80Z"/>
+          </svg>
+          <span>Resumen</span>
+        </span>
+        <strong class="summary-badge">{{ $any(summary).itemCount }}</strong>
+      </button>
+
+      <button
+        type="button"
+        class="summary-clear-btn"
+        [class.summary-clear-btn--undo]="canUndoClear($any(summary))"
+        [title]="canUndoClear($any(summary)) ? 'Deshacer vaciado' : 'Vaciar carrito'"
+        [attr.aria-label]="canUndoClear($any(summary)) ? 'Deshacer vaciado' : 'Vaciar carrito'"
+        [disabled]="$any(summary).itemCount === 0 && !canUndoClear($any(summary))"
+        (click)="clearCartFromSummary($event, $any(summary))">
+        <svg *ngIf="!canUndoClear($any(summary))" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor" aria-hidden="true">
+          <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360Z"/>
+        </svg>
+        <svg *ngIf="canUndoClear($any(summary))" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor" aria-hidden="true">
+          <path d="M280-200v-80h284q63 0 109.5-40T720-420q0-60-46.5-100T564-560H312l104 104-56 56-200-200 200-200 56 56-104 104h252q97 0 166.5 63T800-420q0 94-69.5 157T564-200H280Z"/>
+        </svg>
+      </button>
+    </div>
     <p *ngIf="feedbackMessage" class="msg-ok msg-inline">{{ feedbackMessage }}</p>
     <p *ngIf="errorMessage" class="msg-error msg-inline">{{ errorMessage }}</p>
   </div>
@@ -67,6 +90,7 @@
               <div class="ticket-item-main">
                 <strong>{{ item.productName }}</strong>
                 <small>{{ item.unitPrice | currency:'EUR':'symbol':'1.2-2':'es-ES' }} c/u</small>
+                <small class="ticket-item-note" *ngIf="item.note">x{{ item.quantity }} "{{ item.note }}"</small>
               </div>
               <div class="ticket-item-meta">
                 <span class="ticket-item-qty">x{{ item.quantity }}</span>
@@ -199,62 +223,57 @@
         <div class="modal-slide" *ngIf="currentStep === 3">
           <p class="col-section-title">Notas y propina</p>
 
-          <div class="field-group">
-            <label class="field-label" for="tipAmount">Propina <span class="field-opt">(opcional)</span></label>
-            <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'tip'" (click)="setActiveAmountField('tip')">
-              <span class="input-prefix">EUR</span>
-              <input
-                id="tipAmount"
-                type="number"
-                min="0"
-                step="0.01"
-                [ngModel]="tipAmount"
-                (ngModelChange)="onTipAmountChange($event, $any(summary).total)"
-                name="tipAmount"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
+          <div class="tip-layout">
+            <div class="tip-layout-main">
+              <div class="field-group">
+                <label class="field-label" for="tipAmount">Propina <span class="field-opt">(opcional)</span></label>
+                <div class="input-prefix-wrap" [class.input-prefix-wrap--active]="activeAmountField === 'tip'" (click)="setActiveAmountField('tip')">
+                  <span class="input-prefix">EUR</span>
+                  <input
+                    id="tipAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    [ngModel]="tipAmount"
+                    (ngModelChange)="onTipAmountChange($event, $any(summary).total)"
+                    name="tipAmount"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
 
-          <div class="field-group">
-            <label class="field-label">Keypad para propina</label>
-            <div class="keypad-targets keypad-targets--single">
-              <button
-                type="button"
-                class="target-btn"
-                [class.target-btn--active]="activeAmountField === 'tip'"
-                (click)="setActiveAmountField('tip')"
-              >
-                Editar propina
-              </button>
+              <div class="field-group">
+                <label class="field-label" for="notes">Notas <span class="field-opt">(opcional)</span></label>
+                <textarea id="notes" rows="3" [value]="notes"
+                  (input)="notes = $any($event.target).value"
+                  placeholder="Observaciones del ticket..."
+                  class="field-textarea"></textarea>
+              </div>
             </div>
 
-            <div class="pay-keypad">
-              <button type="button" (click)="onTouchKeyPress('7', $any(summary).total)">7</button>
-              <button type="button" (click)="onTouchKeyPress('8', $any(summary).total)">8</button>
-              <button type="button" (click)="onTouchKeyPress('9', $any(summary).total)">9</button>
-              <button type="button" class="key-action" (click)="onTouchKeyPress('⌫', $any(summary).total)">⌫</button>
+            <div class="tip-layout-keypad">
+              <div class="field-group">
+                <label class="field-label">Keypad para propina</label>
+                <div class="pay-keypad pay-keypad--compact">
+                  <button type="button" (click)="onTouchKeyPress('7', $any(summary).total)">7</button>
+                  <button type="button" (click)="onTouchKeyPress('8', $any(summary).total)">8</button>
+                  <button type="button" (click)="onTouchKeyPress('9', $any(summary).total)">9</button>
+                  <button type="button" class="key-action" (click)="onTouchKeyPress('⌫', $any(summary).total)">⌫</button>
 
-              <button type="button" (click)="onTouchKeyPress('4', $any(summary).total)">4</button>
-              <button type="button" (click)="onTouchKeyPress('5', $any(summary).total)">5</button>
-              <button type="button" (click)="onTouchKeyPress('6', $any(summary).total)">6</button>
-              <button type="button" class="key-action" (click)="onTouchKeyPress('C', $any(summary).total)">C</button>
+                  <button type="button" (click)="onTouchKeyPress('4', $any(summary).total)">4</button>
+                  <button type="button" (click)="onTouchKeyPress('5', $any(summary).total)">5</button>
+                  <button type="button" (click)="onTouchKeyPress('6', $any(summary).total)">6</button>
+                  <button type="button" class="key-action" (click)="onTouchKeyPress('C', $any(summary).total)">C</button>
 
-              <button type="button" (click)="onTouchKeyPress('1', $any(summary).total)">1</button>
-              <button type="button" (click)="onTouchKeyPress('2', $any(summary).total)">2</button>
-              <button type="button" (click)="onTouchKeyPress('3', $any(summary).total)">3</button>
-              <button type="button" (click)="onTouchKeyPress('00', $any(summary).total)">00</button>
+                  <button type="button" (click)="onTouchKeyPress('1', $any(summary).total)">1</button>
+                  <button type="button" (click)="onTouchKeyPress('2', $any(summary).total)">2</button>
+                  <button type="button" (click)="onTouchKeyPress('3', $any(summary).total)">3</button>
+                  <button type="button" (click)="onTouchKeyPress('00', $any(summary).total)">00</button>
 
-              <button type="button" class="key-zero" (click)="onTouchKeyPress('0', $any(summary).total)">0</button>
+                  <button type="button" class="key-zero" (click)="onTouchKeyPress('0', $any(summary).total)">0</button>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="notes">Notas <span class="field-opt">(opcional)</span></label>
-            <textarea id="notes" rows="3" [value]="notes"
-              (input)="notes = $any($event.target).value"
-              placeholder="Observaciones del ticket..."
-              class="field-textarea"></textarea>
           </div>
 
           <div class="total-hero" [class.total-hero--tip]="tipAmount > 0">

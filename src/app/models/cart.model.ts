@@ -2,8 +2,10 @@
  * Modelo de Item en el Carrito del TPV
  */
 export interface CartItem {
+  lineId: string;
   productId: number;
   productName: string;
+  note?: string;
   quantity: number;
   unitPrice: number;
   vatPercent: number;

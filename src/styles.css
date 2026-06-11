@@ -91,7 +91,22 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, O
     --category-tone-7: #1d4e89;
     --category-tone-8: #8c3f2b;
 
+    /* Demo visual para mostrar como afecta el filtro de accesibilidad */
+    --a11y-demo-red: #d32f2f;
+    --a11y-demo-green: #2e7d32;
+    --a11y-demo-yellow: #f9a825;
+    --a11y-demo-blue: #1565c0;
 
+
+}
+
+:root[data-theme='deuteranopia'],
+:root[data-theme='protanopia'],
+:root[data-theme='tritanopia'] {
+    --a11y-demo-red: var(--category-tone-1);
+    --a11y-demo-green: var(--category-tone-2);
+    --a11y-demo-yellow: var(--category-tone-3);
+    --a11y-demo-blue: var(--category-tone-7);
 }
 
 :root[data-theme='colorblind'],
@@ -319,6 +334,25 @@ button {
     transition: background-color 0.2s ease, transform 0.1s ease;
     align-self: center;
     margin-top: 12px;
+}
+
+/* Vincula botones Material al motor de tema basado en CSS variables */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--text-white) !important;
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-white) !important;
+}
+
+.mat-mdc-raised-button.mat-warn,
+.mat-mdc-unelevated-button.mat-warn {
+    background-color: var(--danger-color) !important;
+    color: var(--text-white) !important;
 }
 
 button:hover {

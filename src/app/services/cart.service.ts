@@ -80,15 +80,17 @@ export class CartService {
       next: (openOrders) => {
         const order = openOrders.find((candidate) => candidate.table?.tableNumber === tableNumber);
         const backendItems = this.mapOrderToCartItems(order);
+        const localItems = this.tableCarts[tableNumber] ?? [];
+        const reconciledItems = this.reconcileItemsKeepingNotes(backendItems, localItems);
         this.updateCartLockState(tableNumber, order?.table?.displayName ?? null);
 
         // Bandera clave: si no la levantamos, la hidratación dispara sync
         // y terminamos empujando al backend lo mismo que acabamos de leer.
         this.isHydratingFromBackend = true;
-        this.tableCarts[tableNumber] = this.cloneItems(backendItems);
+        this.tableCarts[tableNumber] = this.cloneItems(reconciledItems);
 
         if (this.activeTableNumber$.value === tableNumber) {
-          this.updateSubjects(this.cloneItems(backendItems));
+          this.updateSubjects(this.cloneItems(reconciledItems));
         }
 
         this.saveCartsToStorage();
@@ -130,15 +132,19 @@ export class CartService {
     // Clonamos antes de mutar: si modificamos this.cartItems$.value directamente,
     // la emisión anterior y la nueva comparten referencia y Angular no detecta el cambio.
     const currentItems = this.cloneItems(this.cartItems$.value);
-    const existingItem = currentItems.find(item => item.productId === product.id);
+    const existingItem = currentItems.find(
+      (item) => item.productId === product.id && this.normalizeNote(item.note) === ''
+    );
 
     if (existingItem) {
       // Flujo principal: sumar sobre la línea existente.
       existingItem.quantity += quantity;
     } else {
       const cartItem: CartItem = {
+        lineId: this.createLineId(),
         productId: product.id,
         productName: product.name,
+        note: '',
         quantity,
         unitPrice: product.price,
         vatPercent: product.vatPercent,
@@ -163,7 +169,9 @@ export class CartService {
     }
 
     const currentItems = this.cloneItems(this.cartItems$.value);
-    const existingItem = currentItems.find(item => item.productId === product.id);
+    const existingItem = currentItems
+      .filter((item) => item.productId === product.id)
+      .sort((a, b) => this.normalizeNote(a.note).localeCompare(this.normalizeNote(b.note)))[0];
     if (!existingItem) {
       return;
     }
@@ -193,7 +201,8 @@ export class CartService {
     // Mismo patrón que addToCart: clonar antes de mutar para no alterar
     // la referencia viva del BehaviorSubject y garantizar detección de cambios.
     const currentItems = this.cloneItems(this.cartItems$.value);
-    const item = currentItems.find(i => i.productId === productId);
+    const item = currentItems.find((i) => i.productId === productId && this.normalizeNote(i.note) === '')
+      ?? currentItems.find((i) => i.productId === productId);
 
     if (item) {
       if (quantity <= 0) {
@@ -218,7 +227,99 @@ export class CartService {
       return;
     }
 
-    const currentItems = this.cartItems$.value.filter(item => item.productId !== productId);
+    const currentItems = this.cloneItems(this.cartItems$.value);
+    const index = currentItems.findIndex((item) => item.productId === productId && this.normalizeNote(item.note) === '');
+    const fallbackIndex = index >= 0 ? index : currentItems.findIndex((item) => item.productId === productId);
+    if (fallbackIndex < 0) {
+      return;
+    }
+
+    currentItems.splice(fallbackIndex, 1);
+    this.updateCartItems(currentItems, tableNumber);
+  }
+
+  removeFromCartByLine(lineId: string): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
+    const tableNumber = this.activeTableNumber$.value;
+    if (tableNumber === null) {
+      return;
+    }
+
+    const currentItems = this.cloneItems(this.cartItems$.value).filter((item) => item.lineId !== lineId);
+    this.updateCartItems(currentItems, tableNumber);
+  }
+
+  updateItemQuantityByLine(lineId: string, quantity: number): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
+    const tableNumber = this.activeTableNumber$.value;
+    if (tableNumber === null) {
+      return;
+    }
+
+    const currentItems = this.cloneItems(this.cartItems$.value);
+    const item = currentItems.find((candidate) => candidate.lineId === lineId);
+    if (!item) {
+      return;
+    }
+
+    if (quantity <= 0) {
+      this.updateCartItems(currentItems.filter((candidate) => candidate.lineId !== lineId), tableNumber);
+      return;
+    }
+
+    item.quantity = quantity;
+    this.updateCartItems(currentItems, tableNumber);
+  }
+
+  updateItemNote(lineId: string, note: string): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
+    const tableNumber = this.activeTableNumber$.value;
+    if (tableNumber === null) {
+      return;
+    }
+
+    const currentItems = this.cloneItems(this.cartItems$.value);
+    const item = currentItems.find((candidate) => candidate.lineId === lineId);
+    if (!item) {
+      return;
+    }
+
+    const normalized = this.normalizeNote(note);
+    if (item.quantity > 1 && normalized.length > 0) {
+      item.quantity -= 1;
+      const existingNotedLine = currentItems.find(
+        (candidate) =>
+          candidate.productId === item.productId
+          && candidate.lineId !== lineId
+          && this.normalizeNote(candidate.note) === normalized
+      );
+
+      if (existingNotedLine) {
+        existingNotedLine.quantity += 1;
+      } else {
+        currentItems.push({
+          ...item,
+          lineId: this.createLineId(),
+          quantity: 1,
+          note: normalized,
+        });
+      }
+
+      this.updateCartItems(currentItems, tableNumber);
+      return;
+    }
+
+    item.note = normalized;
+    this.mergeDuplicatedLines(currentItems);
     this.updateCartItems(currentItems, tableNumber);
   }
 
@@ -236,6 +337,28 @@ export class CartService {
     }
 
     this.updateCartItems([], tableNumber);
+  }
+
+  /**
+   * Restaura un snapshot completo del carrito activo (lineas, cantidades y notas).
+   * Se usa para implementar la accion de deshacer tras vaciar pedido.
+   */
+  restoreCartSnapshot(items: CartItem[]): void {
+    if (!this.ensureCartEditable()) {
+      return;
+    }
+
+    const tableNumber = this.activeTableNumber$.value;
+    if (tableNumber === null) {
+      return;
+    }
+
+    const restoredItems = this.cloneItems(items).map((item) => ({
+      ...item,
+      lineId: item.lineId && item.lineId.trim().length > 0 ? item.lineId : this.createLineId(),
+    }));
+
+    this.updateCartItems(restoredItems, tableNumber);
   }
 
   /**
@@ -305,13 +428,11 @@ export class CartService {
       );
     }
 
+    const groupedItems = this.groupItemsForBackend(items);
     return this.posOperationsService.openOrUpdateOrder({
       tableNumber,
-      items: items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity
-      })),
-      notes: 'Sincronizado desde TPV',
+      items: groupedItems,
+      notes: this.buildOrderNotes(items),
       operatorUsername,
       operatorSessionToken: this.authService.getSessionToken()
     }).pipe(
@@ -334,7 +455,7 @@ export class CartService {
       return [];
     }
 
-    return order.orderLines.map((line: SaleOrderLine) => {
+    return order.orderLines.map((line: SaleOrderLine, index: number) => {
       const quantity = Number(line.quantity) || 0;
       const unitPrice = Number(line.unitPrice) || 0;
       const total = Number(line.total) || (quantity * unitPrice);
@@ -342,8 +463,10 @@ export class CartService {
       const subtotal = Number(line.subtotal) || (total - vat);
 
       return {
+        lineId: line.id ? `backend-${line.id}` : `backend-${line.product?.id ?? 0}-${index}`,
         productId: line.product?.id ?? 0,
         productName: line.productName,
+        note: '',
         quantity,
         unitPrice,
         vatPercent: Number(line.vatPercent) || 0,
@@ -393,6 +516,14 @@ export class CartService {
         if (!this.tableCarts || typeof this.tableCarts !== 'object') {
           this.tableCarts = {};
         }
+
+        for (const tableKey of Object.keys(this.tableCarts)) {
+          this.tableCarts[Number(tableKey)] = (this.tableCarts[Number(tableKey)] || []).map((item) => ({
+            ...item,
+            lineId: item.lineId || this.createLineId(),
+            note: this.normalizeNote(item.note),
+          }));
+        }
       }
     } catch (error) {
       console.error('Error cargando carrito desde storage:', error);
@@ -402,6 +533,99 @@ export class CartService {
 
   private cloneItems(items: CartItem[]): CartItem[] {
     return items.map((item) => ({ ...item }));
+  }
+
+  private createLineId(): string {
+    return `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  private normalizeNote(value: string | null | undefined): string {
+    return (value ?? '').trim();
+  }
+
+  private mergeDuplicatedLines(items: CartItem[]): void {
+    for (let i = 0; i < items.length; i += 1) {
+      const base = items[i];
+      for (let j = items.length - 1; j > i; j -= 1) {
+        const candidate = items[j];
+        if (candidate.productId === base.productId && this.normalizeNote(candidate.note) === this.normalizeNote(base.note)) {
+          base.quantity += candidate.quantity;
+          items.splice(j, 1);
+        }
+      }
+    }
+  }
+
+  private groupItemsForBackend(items: CartItem[]): Array<{ productId: number; quantity: number }> {
+    const grouped = new Map<number, number>();
+    for (const item of items) {
+      const previous = grouped.get(item.productId) ?? 0;
+      grouped.set(item.productId, previous + item.quantity);
+    }
+
+    return Array.from(grouped.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+  }
+
+  private buildOrderNotes(items: CartItem[]): string {
+    const notedLines = items.filter((item) => this.normalizeNote(item.note).length > 0);
+    if (notedLines.length === 0) {
+      return 'Sincronizado desde TPV';
+    }
+
+    const details = notedLines
+      .map((item) => `${item.productName} x${item.quantity}: ${this.normalizeNote(item.note)}`)
+      .join(' | ');
+
+    return `Notas de carrito: ${details}`;
+  }
+
+  private reconcileItemsKeepingNotes(backendItems: CartItem[], localItems: CartItem[]): CartItem[] {
+    const localByProduct = new Map<number, CartItem[]>();
+    for (const localItem of localItems) {
+      if (!localByProduct.has(localItem.productId)) {
+        localByProduct.set(localItem.productId, []);
+      }
+      localByProduct.get(localItem.productId)?.push({ ...localItem });
+    }
+
+    const reconciled: CartItem[] = [];
+
+    for (const backendItem of backendItems) {
+      const localLines = localByProduct.get(backendItem.productId) ?? [];
+      const notedLines = localLines.filter((line) => this.normalizeNote(line.note).length > 0);
+      const notedQty = notedLines.reduce((sum, line) => sum + line.quantity, 0);
+
+      let remaining = backendItem.quantity;
+      for (const noted of notedLines) {
+        if (remaining <= 0) {
+          break;
+        }
+
+        const qty = Math.min(noted.quantity, remaining);
+        reconciled.push({
+          ...backendItem,
+          lineId: noted.lineId || this.createLineId(),
+          note: this.normalizeNote(noted.note),
+          quantity: qty,
+        });
+        remaining -= qty;
+      }
+
+      if (remaining > 0) {
+        reconciled.push({
+          ...backendItem,
+          lineId: this.createLineId(),
+          note: '',
+          quantity: remaining,
+        });
+      }
+
+      if (notedQty === 0 && remaining <= 0) {
+        // no-op: backend quantity ya quedó cubierto por notas locales
+      }
+    }
+
+    return reconciled;
   }
 
   private ensureCartEditable(): boolean {
