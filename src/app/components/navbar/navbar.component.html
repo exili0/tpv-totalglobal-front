@@ -8,7 +8,7 @@
       </svg>
     </button>
     <button class="logo-button" type="button" (click)="goToHome()" aria-label="Ir al menú principal">
-      <img src="assets/SoloLogoVerde-compact.png" alt="Logo TPV" class="navbar-logo" />
+      <img src="assets/LOGO_final.png" alt="Logo TPV" class="navbar-logo" />
     </button>
   </div>
   <!-- DERECHA DEL NAVBAR-->
@@ -49,6 +49,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M280-280h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h240v-80H280v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-440h200L560-760v200Z"/></svg>
       </button>
 
+      <button class="icon-button icon-button--relative" (click)="openLowStockModal()" aria-label="Productos con stock bajo" title="Productos con stock bajo">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-440h80v-200h-80v200Zm40 120q17 0 28.5-11.5T520-360q0-17-11.5-28.5T480-400q-17 0-28.5 11.5T440-360q0 17 11.5 28.5T480-320ZM160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z"/></svg>
+        <span class="stock-badge" *ngIf="lowStockAlertCount > 0" [class.stock-badge--pulse]="hasLowStockNotification" aria-label="Hay productos con stock bajo" [title]="lowStockAlertCount + ' productos con stock bajo'">
+          {{ lowStockAlertCount }}
+        </span>
+      </button>
+
       <button class="icon-button" (click)="gotoRestorePassword()" aria-label="Cambiar contraseña">
       <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="currentColor">
         <path d="M0 0h24v24H0z" fill="none" />
@@ -70,7 +77,7 @@
 <div class="menu-backdrop" [class.menu-backdrop--transparent]="transparentBackdrop" *ngIf="isMenuOpen"
   (click)="closeMenu()">
   <aside class="side-menu" (click)="$event.stopPropagation()">
-    <img src="assets/SoloLogoVerde-compact.png" alt="Logo TPV" class="navbar-logo" />
+    <img src="assets/LOGO_final.png" alt="Logo TPV" class="navbar-logo" />
     <div class="side-menu-header">
       <span class="side-menu-title">Menú TPV_TotalGlobal</span>
     </div>
@@ -101,15 +108,32 @@
   </aside>
 </div>
   <!--------------------------------------------->
-<div class="ops-modal-backdrop" *ngIf="isShiftModalOpen || isZReportModalOpen" (click)="closeOperationalModal()">
+<div class="ops-modal-backdrop" *ngIf="isShiftModalOpen || isZReportModalOpen || isLowStockModalOpen" (click)="closeOperationalModal()">
   <section class="ops-modal" (click)="$event.stopPropagation()">
     <div class="ops-modal-header">
       <h3 *ngIf="isShiftModalOpen">Turno de caja</h3>
       <h3 *ngIf="isZReportModalOpen">Reporte Z diario</h3>
+      <h3 *ngIf="isLowStockModalOpen">Reposición de stock pendiente</h3>
       <button type="button" class="ops-close" (click)="closeOperationalModal()">Cerrar</button>
     </div>
 
     <app-shift-control *ngIf="isShiftModalOpen" (zReportRequested)="openZAfterShiftClose($event)"></app-shift-control>
     <app-daily-z-report *ngIf="isZReportModalOpen" [presetDate]="zReportPresetDate"></app-daily-z-report>
+
+    <div class="low-stock-modal" *ngIf="isLowStockModalOpen">
+      <p class="low-stock-summary" *ngIf="lowStockProducts.length > 0">
+        Se han detectado {{ lowStockProducts.length }} productos por debajo de 30 unidades.
+      </p>
+      <p class="low-stock-summary" *ngIf="lowStockProducts.length === 0">
+        Todo correcto. No hay productos con stock por debajo de 30 unidades.
+      </p>
+
+      <ul class="low-stock-list" *ngIf="lowStockProducts.length > 0">
+        <li class="low-stock-item" *ngFor="let product of lowStockProducts">
+          <span class="low-stock-item-name">{{ product.name }}</span>
+          <span class="low-stock-item-value">{{ product.stock }} ud</span>
+        </li>
+      </ul>
+    </div>
   </section>
 </div>

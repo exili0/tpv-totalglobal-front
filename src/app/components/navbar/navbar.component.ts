@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, catchError, interval, of, startWith, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { OperationalModalService } from '../../services/operational-modal.service';
 import { AccessibilityThemeService } from '../../services/accessibility-theme.service';
 import { ShiftControlComponent } from '../tpv/shift-control/shift-control.component';
 import { DailyZReportComponent } from '../tpv/daily-z-report/daily-z-report.component';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../models/product.model';
 
 /**
  * Barra de navegación principal de la aplicación.
@@ -21,6 +23,9 @@ import { DailyZReportComponent } from '../tpv/daily-z-report/daily-z-report.comp
   styleUrl: './navbar.component.css',
 })
 export class NavbarComponent implements OnInit, OnDestroy {
+  private static readonly LOW_STOCK_THRESHOLD = 30;   // Cantidad de stock por debajo de la cual se considera que un producto tiene stock bajo
+  private static readonly LOW_STOCK_POLLING_MS = 30000; // Frecuencia de comprobación de stock bajo (30 segundos)
+
   // Controla si el menú lateral está abierto (pasado desde el padre en algunos contextos)
   @Input() isMenuOpen = false;
   // Permite que el backdrop del menú sea transparente en ciertas vistas
@@ -29,6 +34,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isUserCardOpen = false;
   isShiftModalOpen = false;
   isZReportModalOpen = false;
+  isLowStockModalOpen = false;
+  lowStockProducts: Product[] = [];
+  lowStockAlertCount = 0;
+  hasLowStockNotification = false;
   zReportPresetDate: string | null = null;
   currentUserName = '';
   currentUserRole = '';
@@ -36,12 +45,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isAccessibilityThemeActive = false;
   private modalRequestSubscription?: Subscription;
   private themeSubscription?: Subscription;
+  private lowStockSubscription?: Subscription; 
+  private lastLowStockIds = new Set<number>();
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private operationalModalService: OperationalModalService,
-    private accessibilityThemeService: AccessibilityThemeService
+    private accessibilityThemeService: AccessibilityThemeService,
+    private productService: ProductService
   ) { }
 
   ngOnInit(): void {
@@ -57,11 +69,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.themeSubscription = this.accessibilityThemeService.currentTheme$.subscribe((theme) => {
       this.isAccessibilityThemeActive = theme !== 'default';
     });
+
+    this.startLowStockMonitoring(); // inicia la monitorización de stock bajo al cargar el componente
   }
 
   ngOnDestroy(): void {
     this.modalRequestSubscription?.unsubscribe();
     this.themeSubscription?.unsubscribe();
+    this.lowStockSubscription?.unsubscribe();
   }
 
   toggleMenu(): void { this.isMenuOpen = !this.isMenuOpen; }
@@ -153,6 +168,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.openZReportModal(dateIso);
   }
 
+  openLowStockModal(): void {
+    this.closeMenu();
+    this.isLowStockModalOpen = true;
+    this.isShiftModalOpen = false;
+    this.isZReportModalOpen = false;
+    this.hasLowStockNotification = false;
+  }
+
   goToRefunds(): void {
     this.closeMenu();
     this.router.navigate(['/tpv/devoluciones']);
@@ -173,7 +196,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
    * Evita cierres accidentales en medio de una operación.
    */
   closeOperationalModal(): void {
-    const modalLabel = this.isShiftModalOpen ? 'turno de caja' : 'reporte Z';
+    const modalLabel = this.isShiftModalOpen
+      ? 'turno de caja'
+      : this.isZReportModalOpen
+        ? 'reporte Z'
+        : 'aviso de stock bajo';
     const shouldClose = confirm(`¿Seguro que quieres salir del ${modalLabel}?`);
     if (!shouldClose) {
       return;
@@ -181,7 +208,51 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     this.isShiftModalOpen = false;
     this.isZReportModalOpen = false;
+    this.isLowStockModalOpen = false;
     this.zReportPresetDate = null;
+  }
+
+  private startLowStockMonitoring(): void {
+    this.lowStockSubscription = interval(NavbarComponent.LOW_STOCK_POLLING_MS)
+      .pipe(
+        startWith(0),
+        switchMap(() =>
+          this.productService.getActiveProducts().pipe(
+            catchError(() => of([] as Product[]))
+          )
+        )
+      )
+      .subscribe((products) => {
+        this.updateLowStockState(products);
+      });
+  }
+
+  private updateLowStockState(products: Product[]): void {
+    const lowStockProducts = products
+      .filter((product) => this.isLowStockProduct(product))
+      .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+
+    const currentIds = new Set<number>(lowStockProducts.map((product) => product.id));
+    const hasNewLowStock = lowStockProducts.some((product) => !this.lastLowStockIds.has(product.id));
+
+    this.lowStockProducts = lowStockProducts;
+    this.lowStockAlertCount = lowStockProducts.length;
+
+    if (hasNewLowStock) {
+      this.hasLowStockNotification = true;
+    }
+
+    if (lowStockProducts.length === 0) {
+      this.hasLowStockNotification = false;
+    }
+
+    this.lastLowStockIds = currentIds;
+  }
+
+  private isLowStockProduct(product: Product): boolean {
+    return product.stock !== null
+      && product.stock !== undefined
+      && product.stock < NavbarComponent.LOW_STOCK_THRESHOLD;
   }
 
   /** Cierra sesión y redirige al login. */
